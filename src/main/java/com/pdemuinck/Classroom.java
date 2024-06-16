@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Classroom {
 
-  private final List<ClassroomActivity> activities = new ArrayList<>();
+  private final List<Activity> activities = new ArrayList<>();
   private final List<KidsProfile> kids;
   private int totalSpots = 0;
 
@@ -14,7 +14,7 @@ public class Classroom {
     this.kids = kids;
   }
 
-  public void addActivity(ClassroomActivity activity) {
+  public void addActivity(Activity activity) {
     activities.add(activity);
     totalSpots += activity.getMaxSpots();
   }
@@ -30,7 +30,7 @@ public class Classroom {
     activities.stream().forEach(act -> act.start(LocalDateTime.now()));
   }
 
-  public List<ClassroomActivity> getActivities() {
+  public List<Activity> getActivities() {
     return activities;
   }
 

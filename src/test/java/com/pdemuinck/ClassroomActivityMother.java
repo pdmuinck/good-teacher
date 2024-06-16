@@ -23,8 +23,8 @@ public class ClassroomActivityMother {
       return this;
     }
 
-    public ClassroomActivity build(){
-      return new ClassroomActivity(name, maxSpots);
+    public Activity build(){
+      return new Activity(name, maxSpots);
     }
   }
 }

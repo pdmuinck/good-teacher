@@ -15,13 +15,6 @@ public class Main extends Application {
     FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("test.fxml"));
     Parent root = loader.load();
     ClassroomController controller = loader.getController();
-    controller.addActivity("drawing");
-    controller.addActivity("ipad");
-    controller.addActivity("blocks");
-    controller.addActivity("puzzles");
-    controller.addKid("Charlie");
-    controller.addKid("Peppa");
-    controller.addKid("Lola");
     Scene scene = new Scene(root, 300, 275);
     stage.setTitle("Good Teacher");
     stage.setScene(scene);

@@ -18,7 +18,7 @@ public class ClassroomMother {
 
   public static class Builder {
     private List<KidsProfile> kidProfiles = new ArrayList<>();
-    private List<ClassroomActivity> activities = new ArrayList<>();
+    private List<Activity> activities = new ArrayList<>();
     private int kids = 0;
 
     public Builder withKids(int kids){

@@ -1,7 +1,6 @@
 package com.pdemuinck;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +11,7 @@ class ClassroomTest {
     Classroom classroom =
         ClassroomMother.classroom().build();
 
-    classroom.addActivity(new ClassroomActivity("drawing", 4));
+    classroom.addActivity(new Activity("drawing", 4));
 
     assertThat(classroom.getTotalSpots()).isEqualTo(4);
   }

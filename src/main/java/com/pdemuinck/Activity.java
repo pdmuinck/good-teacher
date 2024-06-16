@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ClassroomActivity {
+public class Activity {
   private final String name;
   private int availableSpots;
   private final int maxSpots;
@@ -19,7 +19,7 @@ public class ClassroomActivity {
   private final Map<String, ActivityFeedback> feedbackByKid = new HashMap<>();
   private List<String> blackList = new ArrayList<>();
 
-  public ClassroomActivity(String name, int maxSpots) {
+  public Activity(String name, int maxSpots) {
     this.name = name;
     this.maxSpots = maxSpots;
     this.availableSpots = maxSpots;
