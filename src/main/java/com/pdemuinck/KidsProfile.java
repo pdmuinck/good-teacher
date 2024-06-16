@@ -3,12 +3,12 @@ package com.pdemuinck;
 public class KidsProfile {
   private String firstName;
   private String lastName;
-  private String symbolUri;
+  private String avatar;
 
-  public KidsProfile(String firstName, String lastName, String symbolUri) {
+  public KidsProfile(String firstName, String lastName, String avatar) {
     this.firstName = firstName;
     this.lastName = lastName;
-    this.symbolUri = symbolUri;
+    this.avatar = avatar;
   }
 
   public String getFirstName() {
@@ -19,7 +19,7 @@ public class KidsProfile {
     return lastName;
   }
 
-  public String getSymbolUri() {
-    return symbolUri;
+  public String getAvatar() {
+    return avatar;
   }
 }
