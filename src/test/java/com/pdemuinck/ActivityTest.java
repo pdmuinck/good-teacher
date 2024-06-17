@@ -156,6 +156,14 @@ class ActivityTest {
   }
 
   @Test
+  public void testSo(){
+    assertThat(Math.floorDiv(1, 4)).isEqualTo(0);
+    assertThat(Math.floorDiv(2, 4)).isEqualTo(0);
+    assertThat(Math.floorDiv(3, 4)).isEqualTo(1);
+    assertThat(Math.floorDiv(4, 4)).isEqualTo(1);
+  }
+
+  @Test
   public void does_not_allow_kids_on_black_list(){
     Activity activity = new Activity("drawing", 2);
     activity.setBlackList(List.of("Charlie"));

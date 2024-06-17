@@ -7,11 +7,11 @@ import java.util.List;
 public class ClassroomService {
 
   public List<Activity> fetchActivities() {
-    return Arrays.asList(new Activity("drawing", 4), new Activity("puzzles", 4));
+    return Arrays.asList(new Activity("drawing", 4), new Activity("ipad", 3));
   }
 
   public List<KidsProfile> fetchKids() {
-    return Arrays.asList(new KidsProfile("Charlie", "Last", "CH"),
-        new KidsProfile("Peppa", "Pig", "PP"));
+    return Arrays.asList(new KidsProfile("Charlie", "Last", "icons/batman.png"),
+        new KidsProfile("Peppa", "Pig", "icons/spiderman.png"));
   }
 }

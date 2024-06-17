@@ -12,9 +12,8 @@ public class Main extends Application {
 
   @Override
   public void start(Stage stage) throws IOException {
-    FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("test.fxml"));
+    FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("activities.fxml"));
     Parent root = loader.load();
-    ClassroomController controller = loader.getController();
     Scene scene = new Scene(root, 300, 275);
     stage.setTitle("Good Teacher");
     stage.setScene(scene);

@@ -4,50 +4,57 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-import javafx.event.ActionEvent;
+import java.util.stream.Collectors;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.image.Image;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.Border;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
 public class ClassroomController implements Initializable {
 
   @FXML
-  private ScrollPane activitiesPane;
+  private GridPane activitiesPane;
 
   @FXML
-  private ScrollPane kidsPane;
-
-  @FXML
-  private TextField name;
-
-  private VBox activities;
   private VBox kids;
+
   private ClassroomService classroomService = new ClassroomService();
-  List<Label> kidsNames = new ArrayList<>();
+  List<KidView> kidViews = new ArrayList<>();
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
-    activities = new VBox();
-    kids = new VBox();
-    classroomService.fetchActivities().stream().forEach(a -> addActivity(a.getName()));
-    classroomService.fetchKids().stream().forEach(k -> addKid(k.getFirstName()));
-    activitiesPane.setContent(activities);
-    kidsPane.setContent(kids);
+    List<ActivityView> activities =
+        classroomService.fetchActivities().stream().map(a -> createActivityView(a.getName(), a.getMaxSpots()))
+            .collect(
+                Collectors.toList());
+    for(int i = 0 ; i < activities.size(); i += 4){
+      activitiesPane.add(activities.get(i), i, 0, 1, 1);
+      if(i + 1 != activities.size()){
+        activitiesPane.add(activities.get(i + 1), i + 1, 0, 1, 1);
+      }
+      if(i + 2 < activities.size()){
+        activitiesPane.add(activities.get(i + 2), i + 2, 0, 1, 1);
+      }
+      if(i + 3 < activities.size()){
+        activitiesPane.add(activities.get(i + 3), i + 3, 0, 1, 1);
+      }
+    }
+    activitiesPane.setHgap(10); //horizontal gap in pixels => that's what you are asking for
+    kidViews = classroomService.fetchKids().stream().map(k -> createKidView(k.getAvatar())).collect(
+        Collectors.toList());
+    kids.getChildren().addAll(kidViews);
   }
 
-  public void addActivity(String name){
-    Label activity = new Label(name);
+  public ActivityView createActivityView(String name, int spots){
+    ActivityView activity = new ActivityView(name, spots);
     activity.setOnDragOver((DragEvent event) -> {
       if (event.getGestureSource() != activity && event.getDragboard().hasString()) {
         event.acceptTransferModes(TransferMode.ANY);
@@ -58,7 +65,13 @@ public class ClassroomController implements Initializable {
     activity.setOnDragDropped((DragEvent event) -> {
       Dragboard db = event.getDragboard();
       if (db.hasString()) {
-        kidsNames.stream().filter(n -> n.getText().equals(db.getString())).findFirst().map(l -> kids.getChildren().remove(l));
+        kidViews.stream().filter(n -> n.getAvatar().equals(db.getString())).findFirst().map(l -> kids.getChildren().remove(l));
+        activity.getSpots().stream().filter(s -> s.getUserData().equals("icons/empty_box.png")).findFirst().ifPresent(i -> {
+          Image image = new Image(this.getClass().getClassLoader().getResourceAsStream(db.getString()));
+          i.setImage(image);
+          i.setFitHeight(75);
+          i.setFitWidth(75);
+        });
         System.out.println("Dropped: " + db.getString());
         event.setDropCompleted(true);
       } else {
@@ -66,29 +79,21 @@ public class ClassroomController implements Initializable {
       }
       event.consume();
     });
-    activities.getChildren().add(activity);
+    return activity;
   }
 
-  public void addKid(String name){
-    Label aKid = new Label(name);
-    aKid.setOnDragDetected((MouseEvent event) -> {
+  public KidView createKidView(String avatar){
+    KidView view = new KidView(avatar);
+    view.setOnDragDetected((MouseEvent event) -> {
       System.out.println("drag detected");
-      Dragboard db = aKid.startDragAndDrop(TransferMode.ANY);
+      Dragboard db = view.startDragAndDrop(TransferMode.ANY);
       ClipboardContent content = new ClipboardContent();
-      content.putString(name);
+      content.putString(avatar);
       db.setContent(content);
     });
-    aKid.setOnMouseDragged((MouseEvent event) -> {
+    view.setOnMouseDragged((MouseEvent event) -> {
       event.setDragDetect(true);
     });
-    kidsNames.add(aKid);
-    kids.getChildren().add(aKid);
-  }
-
-  @FXML
-  public void addKid(KeyEvent event){
-    if(event.getCode() == KeyCode.ENTER){
-      addKid(name.getText());
-    }
+    return view;
   }
 }
