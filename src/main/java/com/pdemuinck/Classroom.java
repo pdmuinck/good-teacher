@@ -7,10 +7,10 @@ import java.util.List;
 public class Classroom {
 
   private final List<Activity> activities = new ArrayList<>();
-  private final List<KidsProfile> kids;
+  private final List<User> kids;
   private int totalSpots = 0;
 
-  public Classroom(List<KidsProfile> kids) {
+  public Classroom(List<User> kids) {
     this.kids = kids;
   }
 
@@ -34,7 +34,7 @@ public class Classroom {
     return activities;
   }
 
-  public List<KidsProfile> getKids() {
+  public List<User> getKids() {
     return kids;
   }
 

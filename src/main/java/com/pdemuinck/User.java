@@ -1,11 +1,11 @@
 package com.pdemuinck;
 
-public class KidsProfile {
+public class User {
   private String firstName;
   private String lastName;
   private String avatar;
 
-  public KidsProfile(String firstName, String lastName, String avatar) {
+  public User(String firstName, String lastName, String avatar) {
     this.firstName = firstName;
     this.lastName = lastName;
     this.avatar = avatar;

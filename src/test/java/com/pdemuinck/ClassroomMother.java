@@ -17,7 +17,7 @@ public class ClassroomMother {
   }
 
   public static class Builder {
-    private List<KidsProfile> kidProfiles = new ArrayList<>();
+    private List<User> kidProfiles = new ArrayList<>();
     private List<Activity> activities = new ArrayList<>();
     private int kids = 0;
 
@@ -37,8 +37,8 @@ public class ClassroomMother {
 
     public Classroom build(){
       if(kidProfiles.isEmpty()){
-        List<KidsProfile> profiles = IntStream.range(0, kids)
-            .mapToObj(i -> new KidsProfile(String.valueOf(i), String.valueOf(i), String.valueOf(i)))
+        List<User> profiles = IntStream.range(0, kids)
+            .mapToObj(i -> new User(String.valueOf(i), String.valueOf(i), String.valueOf(i)))
             .collect(
                 Collectors.toList());
         Classroom classroom = new Classroom(profiles);

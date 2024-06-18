@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.util.List;
 
 public interface DataStore {
-  void saveKidsProfiles(List<KidsProfile> kidsProfileList);
+  void saveKidsProfiles(List<User> kidsProfileList);
 
   void uploadImages(InputStream is);
 

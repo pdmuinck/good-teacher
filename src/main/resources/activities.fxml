@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pdemuinck.ClassroomController">
+<VBox onDragExited="#reset" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pdemuinck.ClassroomController">
    <children>
       <BorderPane prefHeight="200.0" prefWidth="200.0">
          <left>
@@ -12,9 +12,15 @@
              
          </left>
          <center>
-            <GridPane fx:id="activitiesPane" BorderPane.alignment="CENTER">
+            <GridPane fx:id="activitiesPane" onDragExited="#reset" BorderPane.alignment="CENTER">
             </GridPane>
          </center>
+         <bottom>
+            <Button fx:id="start" mnemonicParsing="false" onMouseClicked="#startAllActivities" text="Button" BorderPane.alignment="CENTER" />
+         </bottom>
+         <right>
+            <Label fx:id="changelog" />
+         </right>
       </BorderPane>
    </children>
 </VBox>
