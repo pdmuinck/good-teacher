@@ -1,10 +1,8 @@
 package com.pdemuinck;
 
-import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
@@ -24,8 +22,8 @@ public class UserView extends HBox {
     imageView.setOnDragDetected((MouseEvent event) -> {
       Dragboard db = imageView.startDragAndDrop(TransferMode.ANY);
       db.setDragView(image);
-      db.setDragViewOffsetX(75.0);
-      db.setDragViewOffsetY(65.0);
+      db.setDragViewOffsetX(50.0);
+      db.setDragViewOffsetY(50.0);
       ClipboardContent content = new ClipboardContent();
       content.putString(avatar);
       db.setContent(content);

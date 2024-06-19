@@ -9,10 +9,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.input.DragEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+
 
 public class ClassroomController implements Initializable {
 
@@ -28,34 +32,48 @@ public class ClassroomController implements Initializable {
   @FXML
   private Label changelog;
 
+  @FXML
+  private TextField newActivity;
+
+
   private ActivityService activityService = new ActivityMockService();
   private UserService userService = new UserMockService();
   List<UserView> userViews = new ArrayList<>();
+  List<ActivityView> activityViews = new ArrayList<>();
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
-    List<ActivityView> activities =
+    activityViews =
         activityService.fetchActivities().stream()
             .map(a -> new ActivityView(a.getName(), a.getMaxSpots()))
             .collect(
                 Collectors.toList());
-    for (int i = 0; i < activities.size(); i += 4) {
-      activitiesPane.add(activities.get(i), i, 0, 1, 1);
-      if (i + 1 != activities.size()) {
-        activitiesPane.add(activities.get(i + 1), i + 1, 0, 1, 1);
-      }
-      if (i + 2 < activities.size()) {
-        activitiesPane.add(activities.get(i + 2), i + 2, 0, 1, 1);
-      }
-      if (i + 3 < activities.size()) {
-        activitiesPane.add(activities.get(i + 3), i + 3, 0, 1, 1);
-      }
-    }
+    fillActivitiesPane();
     activitiesPane.setHgap(10);
     userViews = userService.fetchUsers().stream().map(k -> new UserView(k.getAvatar()))
         .filter(k -> !k.isHide()).collect(
             Collectors.toList());
     kids.getChildren().addAll(userViews);
+  }
+
+  private void fillActivitiesPane() {
+    activitiesPane.getChildren().clear();
+    for (int i = 0; i < activityViews.size(); i += 5) {
+      activitiesPane.add(activityViews.get(i), 0, i, 1, 1);
+      if (i + 1 != activityViews.size()) {
+        activitiesPane.add(activityViews.get(i + 1), 1, i, 1, 1);
+      }
+      if (i + 2 < activityViews.size()) {
+        activitiesPane.add(activityViews.get(i + 2), 2, i, 1, 1);
+      }
+      if (i + 3 < activityViews.size()) {
+        activitiesPane.add(activityViews.get(i + 3), 3, i, 1, 1);
+      }
+      if (i + 4 < activityViews.size()) {
+        activitiesPane.add(activityViews.get(i + 4), 4, i, 1, 1);
+      }
+    }
+    activitiesPane.setHgap(10);
   }
 
   @FXML
@@ -73,6 +91,17 @@ public class ClassroomController implements Initializable {
       String avatar = event.getDragboard().getString();
       this.userViews.stream().filter(uv -> uv.getAvatar().equals(avatar)).findFirst()
           .ifPresent(uv -> uv.reset(avatar));
+    }
+  }
+
+  @FXML
+  public void addActivity(KeyEvent event) {
+    if(event.getCode() == KeyCode.ENTER && !newActivity.getText().isBlank()){
+      String text = newActivity.getText();
+      activityService.addActivity(text);
+      activityViews.add(new ActivityView(text, 4));
+      fillActivitiesPane();
+      newActivity.setText("");
     }
   }
 }

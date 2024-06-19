@@ -13,7 +13,9 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 
 public class ActivityView extends VBox {
 
@@ -29,15 +31,41 @@ public class ActivityView extends VBox {
     Image image = new Image(getClass().getClassLoader().getResourceAsStream("icons/empty_box.png"));
     this.spots = IntStream.range(0, spots).boxed().map(x -> prepareImageView(image)).collect(
         Collectors.toList());
-    super.getChildren().add(this.name);
+    Text plus = new Text("+");
+    Text minus = new Text("-");
+    plus.setOnMouseClicked((MouseEvent event) -> {
+      this.spots.add(prepareImageView(image));
+      super.getChildren().clear();
+      HBox box = new HBox();
+      box.getChildren().addAll(this.name, plus, minus);
+      super.getChildren().add(box);
+      super.getChildren().add(fillSpotPane());
+    });
+    minus.setOnMouseClicked((MouseEvent event) -> {
+      if(this.spots.size() > 0){
+        this.spots.removeLast();
+        super.getChildren().clear();
+        HBox box = new HBox();
+        box.getChildren().addAll(this.name, plus, minus);
+        super.getChildren().add(box);
+        super.getChildren().add(fillSpotPane());
+      }
+    });
+    HBox box = new HBox();
+    box.getChildren().addAll(this.name, plus, minus);
+    super.getChildren().add(box);
+    super.getChildren().add(fillSpotPane());
+  }
+
+  private GridPane fillSpotPane(){
     GridPane gridPane = new GridPane();
-    for (int i = 0; i < spots; i += 2) {
+    for (int i = 0; i < spots.size(); i += 2) {
       gridPane.add(this.spots.get(i), 0, i / 2, 1, 1);
-      if (i + 1 != spots) {
+      if (i + 1 != spots.size()) {
         gridPane.add(this.spots.get(i + 1), 1, i / 2, 1, 1);
       }
     }
-    super.getChildren().add(gridPane);
+    return gridPane;
   }
 
   private ImageView prepareImageView(Image basic) {

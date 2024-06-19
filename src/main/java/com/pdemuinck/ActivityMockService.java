@@ -1,12 +1,12 @@
 package com.pdemuinck;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ActivityMockService implements ActivityService {
 
-  private List<Activity> activities =
-      List.of(new Activity("drawing", 4), new Activity("puzzles", 3));
+  private List<Activity> activities = new ArrayList<>();
 
   @Override
   public void joinActivity(String name, String avatar) {
@@ -31,5 +31,10 @@ public class ActivityMockService implements ActivityService {
   @Override
   public List<Activity> fetchActivities() {
     return activities;
+  }
+
+  @Override
+  public void addActivity(String name) {
+    activities.add(new Activity(name, 4));
   }
 }

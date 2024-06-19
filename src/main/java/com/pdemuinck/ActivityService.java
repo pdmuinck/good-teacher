@@ -9,4 +9,6 @@ public interface ActivityService {
   public void startAllActivities();
 
   public List<Activity> fetchActivities();
+
+  public void addActivity(String name);
 }
