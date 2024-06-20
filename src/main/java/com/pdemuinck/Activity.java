@@ -1,23 +1,44 @@
 package com.pdemuinck;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class Activity {
-  private final String name;
+  private String name;
+  @JsonIgnore
   private int availableSpots;
-  private final int maxSpots;
+  private int maxSpots;
+  private String imageUrl;
+  @JsonIgnore
   private final List<ActivityEvent> events = new ArrayList<>();
+  @JsonIgnoreProperties
   private LocalDateTime firstStartTs, lastStartTs, endTs;
+  @JsonIgnore
   private long totalDuration = 0;
+  @JsonIgnore
   private final Map<String, LocalDateTime> joinTimeByKid = new HashMap<>();
+  @JsonIgnore
   private final Map<String, Long> durationByKid = new HashMap<>();
+  @JsonIgnore
   private final Map<String, ActivityFeedback> feedbackByKid = new HashMap<>();
   private List<String> blackList = new ArrayList<>();
+
+  public Activity() {
+  }
+
+  public Activity(String name, String imageUrl) {
+    this.name = name;
+    this.imageUrl = imageUrl;
+  }
 
   public Activity(String name, int maxSpots) {
     this.name = name;
@@ -42,7 +63,7 @@ public class Activity {
     endTs = eventTs;
     totalDuration += Duration.between(lastStartTs, endTs).toMinutes();
     joinTimeByKid.forEach((name, startTs) -> {
-      if(startTs.isAfter(lastStartTs)){
+      if (startTs.isAfter(lastStartTs)) {
         durationByKid.computeIfPresent(name,
             (key, duration) -> duration + Duration.between(startTs, eventTs).toMinutes());
       } else {
@@ -54,8 +75,8 @@ public class Activity {
 
   public void join(LocalDateTime eventTs, String name) {
     events.add(new ActivityEvent(eventTs, ActivityEventType.ACTIVITY_JOINED));
-    if(blackList.contains(name)){
-      events.add(new ActivityEvent(eventTs,ActivityEventType.ACTIVITY_NOT_ALLOWED));
+    if (blackList.contains(name)) {
+      events.add(new ActivityEvent(eventTs, ActivityEventType.ACTIVITY_NOT_ALLOWED));
       throw new RuntimeException("Kid is not allowed to join");
     }
     if (availableSpots > 0) {
@@ -67,27 +88,29 @@ public class Activity {
     }
   }
 
-  public void leave(LocalDateTime eventTs, String name){
+  public void leave(LocalDateTime eventTs, String name) {
     events.add(new ActivityEvent(eventTs, ActivityEventType.ACTIVITY_LEFT));
     availableSpots++;
     LocalDateTime joinTs = joinTimeByKid.get(name);
-    if(lastStartTs != null){
+    if (lastStartTs != null) {
       if (endTs == null || !endTs.isBefore(eventTs)) {
-        if(joinTs.isBefore(eventTs) && joinTs.isAfter(lastStartTs)){
-          durationByKid.computeIfPresent(name, (key, duration) -> duration + Duration.between(joinTs, eventTs).toMinutes());
+        if (joinTs.isBefore(eventTs) && joinTs.isAfter(lastStartTs)) {
+          durationByKid.computeIfPresent(name,
+              (key, duration) -> duration + Duration.between(joinTs, eventTs).toMinutes());
         } else {
-          durationByKid.computeIfPresent(name, (key, duration) -> duration + Duration.between(lastStartTs, eventTs).toMinutes());
+          durationByKid.computeIfPresent(name,
+              (key, duration) -> duration + Duration.between(lastStartTs, eventTs).toMinutes());
         }
       }
     }
   }
 
-  public void feedback(LocalDateTime eventTs, String name, ActivityFeedback feedback){
+  public void feedback(LocalDateTime eventTs, String name, ActivityFeedback feedback) {
     events.add(new ActivityEvent(eventTs, ActivityEventType.ACTIVITY_FEEDBACK));
     feedbackByKid.put(name, feedback);
   }
 
-  public long getDuration() {
+  public long getTotalDuration() {
     return totalDuration;
   }
 
@@ -111,8 +134,46 @@ public class Activity {
     this.blackList = blackList;
   }
 
+  public String getImageUrl() {
+    return imageUrl;
+  }
+
   public String getName() {
     return name;
   }
 
+  public String toJsonString() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    try {
+      return objectMapper.writeValueAsString(this);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public Activity fromJsonString(String activity){
+    ObjectMapper objectMapper = new ObjectMapper();
+    try {
+      return objectMapper.readValue(activity, Activity.class);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Activity activity = (Activity) o;
+    return Objects.equals(name, activity.name);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name);
+  }
 }

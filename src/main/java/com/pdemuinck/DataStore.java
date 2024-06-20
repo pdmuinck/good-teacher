@@ -1,13 +1,11 @@
 package com.pdemuinck;
 
-import java.io.InputStream;
 import java.util.List;
 
 public interface DataStore {
-  void saveKidsProfiles(List<User> kidsProfileList);
 
-  void uploadImages(InputStream is);
+  void writeActivity(String activity);
+  List<String> readActivities();
 
-  void saveActivity(ActivityEvent activityEvent);
-
+  void writeActivityBoard(String board, String path);
 }

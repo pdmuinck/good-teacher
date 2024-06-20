@@ -28,6 +28,10 @@ public class ActivityView extends VBox {
   public ActivityView(String name, int spots) {
     this.name = new Label(name);
     this.name.setAlignment(Pos.TOP_CENTER);
+    Text cancel = new Text("x");
+    cancel.setOnMouseClicked((MouseEvent event) -> {
+      Main.classroomController.removeActivity(this);
+    });
     Image image = new Image(getClass().getClassLoader().getResourceAsStream("icons/empty_box.png"));
     this.spots = IntStream.range(0, spots).boxed().map(x -> prepareImageView(image)).collect(
         Collectors.toList());
@@ -37,7 +41,7 @@ public class ActivityView extends VBox {
       this.spots.add(prepareImageView(image));
       super.getChildren().clear();
       HBox box = new HBox();
-      box.getChildren().addAll(this.name, plus, minus);
+      box.getChildren().addAll(this.name, cancel, plus, minus);
       super.getChildren().add(box);
       super.getChildren().add(fillSpotPane());
     });
@@ -46,13 +50,14 @@ public class ActivityView extends VBox {
         this.spots.removeLast();
         super.getChildren().clear();
         HBox box = new HBox();
-        box.getChildren().addAll(this.name, plus, minus);
+        box.getChildren().addAll(this.name, cancel, plus, minus);
         super.getChildren().add(box);
         super.getChildren().add(fillSpotPane());
       }
     });
+
     HBox box = new HBox();
-    box.getChildren().addAll(this.name, plus, minus);
+    box.getChildren().addAll(this.name, cancel, plus, minus);
     super.getChildren().add(box);
     super.getChildren().add(fillSpotPane());
   }

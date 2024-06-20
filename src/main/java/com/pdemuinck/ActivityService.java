@@ -11,4 +11,7 @@ public interface ActivityService {
   public List<Activity> fetchActivities();
 
   public void addActivity(String name);
+
+  void saveBoard(List<Activity> activities);
+
 }

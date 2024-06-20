@@ -35,7 +35,6 @@ public class ClassroomController implements Initializable {
   @FXML
   private TextField newActivity;
 
-
   private ActivityService activityService = new ActivityMockService();
   private UserService userService = new UserMockService();
   List<UserView> userViews = new ArrayList<>();
@@ -43,12 +42,6 @@ public class ClassroomController implements Initializable {
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
-    activityViews =
-        activityService.fetchActivities().stream()
-            .map(a -> new ActivityView(a.getName(), a.getMaxSpots()))
-            .collect(
-                Collectors.toList());
-    fillActivitiesPane();
     activitiesPane.setHgap(10);
     userViews = userService.fetchUsers().stream().map(k -> new UserView(k.getAvatar()))
         .filter(k -> !k.isHide()).collect(
@@ -103,5 +96,10 @@ public class ClassroomController implements Initializable {
       fillActivitiesPane();
       newActivity.setText("");
     }
+  }
+
+  public void removeActivity(ActivityView activity) {
+    this.activityViews.remove(activity);
+    fillActivitiesPane();
   }
 }

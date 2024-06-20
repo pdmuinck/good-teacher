@@ -3,18 +3,19 @@ package com.pdemuinck;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class ActivityTest {
-
   @Test
   public void keeps_track_of_activity_duration() {
     Activity activity = new Activity("drawing", 4);
     activity.start(LocalDateTime.of(2024, 6, 12, 0, 0));
     activity.pause(LocalDateTime.of(2024, 6, 12, 0, 30));
-    assertThat(activity.getDuration()).isEqualTo(30);
+    assertThat(activity.getTotalDuration()).isEqualTo(30);
   }
 
   @Test
@@ -37,7 +38,7 @@ class ActivityTest {
     activity.pause(LocalDateTime.of(2024, 6, 12, 0, 30));
     activity.start(LocalDateTime.of(2024, 6, 12, 1, 0));
     activity.pause(LocalDateTime.of(2024, 6, 12, 1, 45));
-    assertThat(activity.getDuration()).isEqualTo(75);
+    assertThat(activity.getTotalDuration()).isEqualTo(75);
   }
 
   @Test
@@ -168,5 +169,25 @@ class ActivityTest {
     Activity activity = new Activity("drawing", 2);
     activity.setBlackList(List.of("Charlie"));
     assertThrows(RuntimeException.class, () -> activity.join(LocalDateTime.now(), "Charlie"));
+  }
+
+  @Test
+  public void writes_and_parses_json(){
+    Activity activity = new Activity("test", 2);
+    assertThat(activity.fromJsonString(activity.toJsonString())).isEqualTo(activity);
+  }
+
+  @Test
+  public void writes_list_of_activities_json(){
+    List<Activity> activities = List.of(new Activity("test", 2));
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    try {
+      String s = objectMapper.writeValueAsString(activities);
+
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+
   }
 }
