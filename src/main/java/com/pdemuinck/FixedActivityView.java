@@ -3,6 +3,7 @@ package com.pdemuinck;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javafx.scene.image.Image;
@@ -22,6 +23,7 @@ public class FixedActivityView extends VBox {
   List<ImageView> spots;
 
   private ActivityService activityService = new ActivityMockService(new FileDataStore());
+  private UserService userService = new UserMockService(new FileDataStore());
 
   public FixedActivityView(String name, String imageUrl, int spots) {
     this.name = name;
@@ -79,14 +81,18 @@ public class FixedActivityView extends VBox {
           Image image2 =
               null;
           try {
-            image2 = new Image(new FileInputStream(db.getString()), 75, 75, false, false);
+            image2 = new Image(new FileInputStream(db.getString().split(",")[1]), 75, 75, false, false);
           } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
           }
           imageView1.setImage(image2);
           imageView1.setPreserveRatio(true);
-          imageView1.setUserData(db.getString());
-          activityService.joinActivity(this.name, db.getString());
+          imageView1.setUserData(db.getString().split(",")[1]);
+
+          activityService.joinActivity(name, userService.fetchUsers().stream().filter(
+                  u -> u.getName().equals(db.getString().split(",")[0]) &&
+                      u.getAvatar().equals(db.getString().split(",")[1]))
+              .findFirst().get().getName());
         } else {
           event.setDropCompleted(false);
         }

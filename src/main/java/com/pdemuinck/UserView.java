@@ -41,7 +41,7 @@ public class UserView extends HBox {
             db.setDragViewOffsetX(50.0);
             db.setDragViewOffsetY(50.0);
             ClipboardContent content = new ClipboardContent();
-            content.putString(avatar);
+            content.putString(String.join(",", name, avatar));
             db.setContent(content);
             imageView.setVisible(false);
           });
@@ -76,7 +76,7 @@ public class UserView extends HBox {
           db.setDragViewOffsetX(50.0);
           db.setDragViewOffsetY(50.0);
           ClipboardContent content = new ClipboardContent();
-          content.putString(avatar);
+          content.putString(String.join(",", name, avatar));
           db.setContent(content);
           imageView.setVisible(false);
         });
