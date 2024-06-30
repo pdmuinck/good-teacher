@@ -35,9 +35,10 @@ public class Activity {
   public Activity() {
   }
 
-  public Activity(String name, String imageUrl) {
+  public Activity(String name, String imageUrl, int maxSpots) {
     this.name = name;
     this.imageUrl = imageUrl;
+    this.maxSpots = maxSpots;
   }
 
   public Activity(String name, int maxSpots) {
@@ -150,16 +151,6 @@ public class Activity {
       throw new RuntimeException(e);
     }
   }
-
-  public Activity fromJsonString(String activity){
-    ObjectMapper objectMapper = new ObjectMapper();
-    try {
-      return objectMapper.readValue(activity, Activity.class);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -175,5 +166,17 @@ public class Activity {
   @Override
   public int hashCode() {
     return Objects.hash(name);
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void setMaxSpots(int maxSpots) {
+    this.maxSpots = maxSpots;
+  }
+
+  public void setImageUrl(String imageUrl) {
+    this.imageUrl = imageUrl;
   }
 }

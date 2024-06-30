@@ -3,6 +3,7 @@ package com.pdemuinck;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import javafx.fxml.FXML;
@@ -35,16 +36,22 @@ public class ClassroomController implements Initializable {
   @FXML
   private TextField newActivity;
 
-  private ActivityService activityService = new ActivityMockService();
-  private UserService userService = new UserMockService();
+  @FXML
+  private TextField newUser;
+
+  private ActivityService activityService = new ActivityMockService(new FileDataStore());
+  private UserService userService = new UserMockService(new FileDataStore());
   List<UserView> userViews = new ArrayList<>();
   List<ActivityView> activityViews = new ArrayList<>();
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
+    List<Activity> activities = activityService.fetchActivities();
+    this.activityViews = activities.stream().map(a -> new ActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots())).collect(
+        Collectors.toList());
     activitiesPane.setHgap(10);
-    userViews = userService.fetchUsers().stream().map(k -> new UserView(k.getAvatar()))
-        .filter(k -> !k.isHide()).collect(
+    fillActivitiesPane();
+    userViews = userService.fetchUsers().stream().map(k -> new UserView(k.getName(), k.getAvatar())).collect(
             Collectors.toList());
     kids.getChildren().addAll(userViews);
   }
@@ -91,8 +98,8 @@ public class ClassroomController implements Initializable {
   public void addActivity(KeyEvent event) {
     if(event.getCode() == KeyCode.ENTER && !newActivity.getText().isBlank()){
       String text = newActivity.getText();
-      activityService.addActivity(text);
-      activityViews.add(new ActivityView(text, 4));
+      Activity activity = activityService.addActivity(text);
+      activityViews.add(new ActivityView(activity.getName(), activity.getImageUrl(), activity.getMaxSpots()));
       fillActivitiesPane();
       newActivity.setText("");
     }
@@ -101,5 +108,33 @@ public class ClassroomController implements Initializable {
   public void removeActivity(ActivityView activity) {
     this.activityViews.remove(activity);
     fillActivitiesPane();
+  }
+
+  @FXML
+  public void saveBoard(MouseEvent event){
+    List<Activity> activities =
+        activityViews.stream().map(a -> new Activity(a.getName().getText(), a.getImageUrl(), a.getSpots().size()))
+            .collect(Collectors.toList());
+    activityService.saveBoard(activities);
+  }
+
+  @FXML
+  public void addUser(KeyEvent event){
+    if(event.getCode() == KeyCode.ENTER && !newUser.getText().isBlank()){
+      String text = newUser.getText();
+      Optional<User> user = userService.fetchUserByName(text);
+      UserView userView = user.map(u -> new UserView(u.getName(), u.getAvatar())).orElse(new UserView(text, ""));
+      newUser.setText("");
+      if(user.isEmpty()){
+        userViews.add(userView);
+        userService.addUser(text, "");
+      }
+      kids.getChildren().clear();
+      kids.getChildren().addAll(userViews);
+    }
+  }
+
+  public void saveUsers(){
+    this.userViews.forEach(uv -> userService.addUser(uv.getName(), uv.getAvatar()));
   }
 }

@@ -1,7 +1,17 @@
 package com.pdemuinck;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-class ActivityServiceTest {
+class ActivityMockServiceTest {
+
+  @Test
+  public void when_activity_already_exists_then_we_do_not_persist(){
+    FileDataStore dataStoreMock = Mockito.mock(FileDataStore.class);
+    ActivityService activityService = new ActivityMockService(dataStoreMock);
+    activityService.addActivity("painting");
+    activityService.addActivity("painting");
+    Mockito.verify(dataStoreMock, Mockito.times(1)).writeActivity("painting,\r\n");
+  }
 
 }

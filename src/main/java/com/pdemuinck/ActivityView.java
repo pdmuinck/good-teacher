@@ -1,5 +1,8 @@
 package com.pdemuinck;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -16,17 +19,22 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 
 public class ActivityView extends VBox {
+
 
   private Label name;
 
   private List<ImageView> spots;
 
-  private ActivityService activityService = new ActivityMockService();
+  private ActivityService activityService = new ActivityMockService(new FileDataStore());
 
-  public ActivityView(String name, int spots) {
+  private String imageUrl;
+
+  public ActivityView(String name, String imageUrl, int spots) {
     this.name = new Label(name);
+
     this.name.setAlignment(Pos.TOP_CENTER);
     Text cancel = new Text("x");
     cancel.setOnMouseClicked((MouseEvent event) -> {
@@ -43,26 +51,77 @@ public class ActivityView extends VBox {
       HBox box = new HBox();
       box.getChildren().addAll(this.name, cancel, plus, minus);
       super.getChildren().add(box);
+      if (!imageUrl.isBlank()) {
+        Image icon = null;
+        try {
+          icon = new Image(new FileInputStream(imageUrl), 150, 150, false, false);
+          ImageView activityImage = new ImageView(icon);
+          super.getChildren().add(activityImage);
+        } catch (FileNotFoundException e) {
+          throw new RuntimeException(e);
+        }
+      }
       super.getChildren().add(fillSpotPane());
     });
     minus.setOnMouseClicked((MouseEvent event) -> {
-      if(this.spots.size() > 0){
+      if (this.spots.size() > 0) {
         this.spots.removeLast();
         super.getChildren().clear();
         HBox box = new HBox();
         box.getChildren().addAll(this.name, cancel, plus, minus);
         super.getChildren().add(box);
+
+        if (!imageUrl.isBlank()) {
+          Image icon = null;
+          try {
+            icon = new Image(new FileInputStream(imageUrl), 150, 150, false, false);
+            ImageView activityImage = new ImageView(icon);
+            super.getChildren().add(activityImage);
+          } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+          }
+        }
         super.getChildren().add(fillSpotPane());
       }
     });
 
+    this.name.setOnMouseClicked((MouseEvent event) -> {
+      FileChooser fileChooser = new FileChooser();
+      File file = fileChooser.showOpenDialog(this.getScene().getWindow());
+      activityService.updateActivityIcon(name, file.getAbsolutePath());
+      this.imageUrl = file.getAbsolutePath();
+      try {
+        Image icon = new Image(new FileInputStream(file.getAbsolutePath()), 150, 150, false, false);
+        ImageView activityImage = new ImageView(icon);
+        HBox box = new HBox();
+        box.getChildren().addAll(this.name, cancel, plus, minus);
+        super.getChildren().clear();
+        super.getChildren().add(box);
+        super.getChildren().add(activityImage);
+        super.getChildren().add(fillSpotPane());
+      } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    });
+
+
     HBox box = new HBox();
     box.getChildren().addAll(this.name, cancel, plus, minus);
     super.getChildren().add(box);
+    if (!imageUrl.isBlank()) {
+      Image icon = null;
+      try {
+        icon = new Image(new FileInputStream(imageUrl), 150, 150, false, false);
+        ImageView activityImage = new ImageView(icon);
+        super.getChildren().add(activityImage);
+      } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    }
     super.getChildren().add(fillSpotPane());
   }
 
-  private GridPane fillSpotPane(){
+  private GridPane fillSpotPane() {
     GridPane gridPane = new GridPane();
     for (int i = 0; i < spots.size(); i += 2) {
       gridPane.add(this.spots.get(i), 0, i / 2, 1, 1);
@@ -87,7 +146,8 @@ public class ActivityView extends VBox {
       imageView1.setUserData("icons/empty_box.png");
     });
     imageView1.setOnDragOver((DragEvent event) -> {
-      if (event.getGestureSource() != imageView1 && event.getDragboard().hasString() && imageView1.getUserData().equals("icons/empty_box.png")) {
+      if (event.getGestureSource() != imageView1 && event.getDragboard().hasString() &&
+          imageView1.getUserData().equals("icons/empty_box.png")) {
         event.acceptTransferModes(TransferMode.ANY);
       }
       event.consume();
@@ -97,7 +157,12 @@ public class ActivityView extends VBox {
       if (db.hasString()) {
         if (imageView1.getUserData().equals("icons/empty_box.png")) {
           Image image2 =
-              new Image(this.getClass().getClassLoader().getResourceAsStream(db.getString()), 75, 75, false, false);
+              null;
+          try {
+            image2 = new Image(new FileInputStream(db.getString()), 75, 75, false, false);
+          } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+          }
           imageView1.setImage(image2);
           imageView1.setPreserveRatio(true);
           imageView1.setUserData(db.getString());
@@ -112,5 +177,17 @@ public class ActivityView extends VBox {
       event.consume();
     });
     return imageView1;
+  }
+
+  public Label getName() {
+    return name;
+  }
+
+  public List<ImageView> getSpots() {
+    return spots;
+  }
+
+  public String getImageUrl() {
+    return imageUrl;
   }
 }

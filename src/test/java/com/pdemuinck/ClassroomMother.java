@@ -38,7 +38,7 @@ public class ClassroomMother {
     public Classroom build(){
       if(kidProfiles.isEmpty()){
         List<User> profiles = IntStream.range(0, kids)
-            .mapToObj(i -> new User(String.valueOf(i), String.valueOf(i), String.valueOf(i)))
+            .mapToObj(i -> new User(String.valueOf(i), String.valueOf(i)))
             .collect(
                 Collectors.toList());
         Classroom classroom = new Classroom(profiles);

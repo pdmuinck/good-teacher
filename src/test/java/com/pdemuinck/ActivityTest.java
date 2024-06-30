@@ -171,23 +171,4 @@ class ActivityTest {
     assertThrows(RuntimeException.class, () -> activity.join(LocalDateTime.now(), "Charlie"));
   }
 
-  @Test
-  public void writes_and_parses_json(){
-    Activity activity = new Activity("test", 2);
-    assertThat(activity.fromJsonString(activity.toJsonString())).isEqualTo(activity);
-  }
-
-  @Test
-  public void writes_list_of_activities_json(){
-    List<Activity> activities = List.of(new Activity("test", 2));
-
-    ObjectMapper objectMapper = new ObjectMapper();
-    try {
-      String s = objectMapper.writeValueAsString(activities);
-
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-
-  }
 }
