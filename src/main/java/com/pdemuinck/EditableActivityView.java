@@ -21,7 +21,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 
-public class ActivityView extends VBox {
+public class EditableActivityView extends VBox {
 
 
   private Label name;
@@ -32,8 +32,9 @@ public class ActivityView extends VBox {
 
   private String imageUrl;
 
-  public ActivityView(String name, String imageUrl, int spots) {
+  public EditableActivityView(String name, String imageUrl, int spots) {
     this.name = new Label(name);
+    this.imageUrl = imageUrl;
 
     this.name.setAlignment(Pos.TOP_CENTER);
     Text cancel = new Text("x");
