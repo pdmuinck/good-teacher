@@ -89,20 +89,38 @@ public class EditableActivityView extends VBox {
     this.name.setOnMouseClicked((MouseEvent event) -> {
       FileChooser fileChooser = new FileChooser();
       File file = fileChooser.showOpenDialog(this.getScene().getWindow());
-      activityService.updateActivityIcon(name, file.getAbsolutePath());
-      this.imageUrl = file.getAbsolutePath();
-      try {
-        Image icon = new Image(new FileInputStream(file.getAbsolutePath()), 150, 150, false, false);
-        ImageView activityImage = new ImageView(icon);
-        HBox box = new HBox();
-        box.getChildren().addAll(this.name, cancel, plus, minus);
-        super.getChildren().clear();
-        super.getChildren().add(box);
-        super.getChildren().add(activityImage);
-        super.getChildren().add(fillSpotPane());
-      } catch (FileNotFoundException e) {
-        throw new RuntimeException(e);
+      if(file != null){
+        activityService.updateActivityIcon(name, file.getAbsolutePath());
+        this.imageUrl = file.getAbsolutePath();
+        try {
+          Image icon = new Image(new FileInputStream(file.getAbsolutePath()), 150, 150, false, false);
+          ImageView activityImage = new ImageView(icon);
+          activityImage.setOnMouseClicked((MouseEvent e) -> {
+            File newImage = fileChooser.showOpenDialog(this.getScene().getWindow());
+            if(newImage != null){
+              activityService.updateActivityIcon(name, newImage.getAbsolutePath());
+              this.imageUrl = newImage.getAbsolutePath();
+              Image newIcon = null;
+              try {
+                newIcon =
+                    new Image(new FileInputStream(newImage.getAbsolutePath()), 150, 150, false, false);
+              } catch (FileNotFoundException ex) {
+                throw new RuntimeException(ex);
+              }
+              activityImage.setImage(newIcon);
+            }
+          });
+          HBox box = new HBox();
+          box.getChildren().addAll(this.name, cancel, plus, minus);
+          super.getChildren().clear();
+          super.getChildren().add(box);
+          super.getChildren().add(activityImage);
+          super.getChildren().add(fillSpotPane());
+        } catch (FileNotFoundException e) {
+          throw new RuntimeException(e);
+        }
       }
+
     });
 
 
@@ -114,6 +132,20 @@ public class EditableActivityView extends VBox {
       try {
         icon = new Image(new FileInputStream(imageUrl), 150, 150, false, false);
         ImageView activityImage = new ImageView(icon);
+        activityImage.setOnMouseClicked((MouseEvent event) -> {
+          FileChooser fileChooser = new FileChooser();
+          File file = fileChooser.showOpenDialog(this.getScene().getWindow());
+          if(file != null){
+            activityService.updateActivityIcon(name, file.getAbsolutePath());
+            this.imageUrl = file.getAbsolutePath();
+            try {
+              Image newIcon = new Image(new FileInputStream(file.getAbsolutePath()), 150, 150, false, false);
+              activityImage.setImage(newIcon);
+            } catch (FileNotFoundException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        });
         super.getChildren().add(activityImage);
       } catch (FileNotFoundException e) {
         throw new RuntimeException(e);
