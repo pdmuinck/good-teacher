@@ -12,21 +12,21 @@ public class FileDataStore implements DataStore{
 
   @Override
   public void writeActivity(String data) {
-    write(data, StandardOpenOption.APPEND);
+    write(data, "activities.csv", StandardOpenOption.APPEND);
   }
 
   @Override
   public void overWriteActivities(String data) {
-    write(data, StandardOpenOption.TRUNCATE_EXISTING);
+    write(data, "activities.csv", StandardOpenOption.TRUNCATE_EXISTING);
   }
 
-  private void write(String data, StandardOpenOption openOption){
+  private void write(String data, String file, StandardOpenOption openOption){
     String path = String.join(File.separator, System.getProperty("user.home"), "AppData", "Roaming", "GoodTeacher");
     File customDir = new File(path);
 
     if (customDir.exists() || customDir.mkdirs()) {
       try {
-        Files.write(new File(String.join(File.separator, path, "activities.csv")).toPath(), data.getBytes(StandardCharsets.UTF_8), openOption);
+        Files.write(new File(String.join(File.separator, path, file)).toPath(), data.getBytes(StandardCharsets.UTF_8), openOption);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -52,6 +52,11 @@ public class FileDataStore implements DataStore{
     } else {
       throw new RuntimeException(String.format("Cannot write data, because custom dir doesn't exist: %s", path));
     }
+  }
+
+  @Override
+  public void overWriteUsers(String data) {
+    write(data, "users.csv", StandardOpenOption.TRUNCATE_EXISTING);
   }
 
   @Override

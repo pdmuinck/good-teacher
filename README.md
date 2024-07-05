@@ -1,6 +1,5 @@
 # Features
 
-- kids can choose which activity to join
 - teacher can limit kids from activities
 - teacher should see how much time is spent on each activity
 - teacher uploads icons or symbols

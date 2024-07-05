@@ -25,6 +25,21 @@ class UserMockServiceTest {
   }
 
   @Test
+  public void updates_avatar_when_user_exists(){
+    // Given
+    DataStore dataStoreMock = Mockito.mock(DataStore.class);
+    UserService userService = new UserMockService(dataStoreMock);
+
+    // When
+    userService.addUser("Charlie", "abc");
+    userService.addUser("Charlie", "def");
+
+    // Then
+    Mockito.verify(dataStoreMock, Mockito.times(1)).saveUser("Charlie,abc");
+    Mockito.verify(dataStoreMock, Mockito.times(1)).saveUser("Charlie,def");
+  }
+
+  @Test
   public void fetches_users_from_data_store(){
     // Given
     DataStore dataStoreMock = Mockito.mock(DataStore.class);

@@ -9,6 +9,7 @@ public interface DataStore {
   void overWriteActivities(String data);
 
   void saveUser(String user);
+  void overWriteUsers(String data);
   List<String> readActivities();
 
   void writeActivityBoard(String board, String path, String fileName);

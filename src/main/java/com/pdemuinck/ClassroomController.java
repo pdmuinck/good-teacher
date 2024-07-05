@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -50,7 +49,8 @@ public class ClassroomController implements Initializable {
 
   private ActivityService activityService = new ActivityMockService(new FileDataStore());
   private UserService userService = new UserMockService(new FileDataStore());
-  List<UserView> userViews = new ArrayList<>();
+  List<FixedUserView> fixedUserViews = new ArrayList<>();
+  List<EditableUserView> editableUserViews = new ArrayList<>();
   List<EditableActivityView> activityViews = new ArrayList<>();
 
   @Override
@@ -60,9 +60,9 @@ public class ClassroomController implements Initializable {
         Collectors.toList());
     activitiesPane.setHgap(10);
     fillWithEditableActivities(this.activityViews);
-    userViews = userService.fetchUsers().stream().map(k -> new UserView(k.getName(), k.getAvatar())).collect(
+    editableUserViews = userService.fetchUsers().stream().map(k -> new EditableUserView(k.getName(), k.getAvatar())).collect(
             Collectors.toList());
-    kids.getChildren().addAll(userViews);
+    kids.getChildren().addAll(editableUserViews);
   }
 
   private void fillWithEditableActivities(List<EditableActivityView> activities) {
@@ -119,7 +119,7 @@ public class ClassroomController implements Initializable {
   public void reset(DragEvent event) {
     if (event.getTransferMode() == null) {
       String avatar = event.getDragboard().getString();
-      this.userViews.stream().filter(uv -> uv.getAvatar().equals(avatar)).findFirst()
+      this.fixedUserViews.stream().filter(uv -> uv.getAvatar().equals(avatar)).findFirst()
           .ifPresent(uv -> uv.reset(avatar));
     }
   }
@@ -153,19 +153,20 @@ public class ClassroomController implements Initializable {
     if(event.getCode() == KeyCode.ENTER && !newUser.getText().isBlank()){
       String text = newUser.getText();
       Optional<User> user = userService.fetchUserByName(text);
-      UserView userView = user.map(u -> new UserView(u.getName(), u.getAvatar())).orElse(new UserView(text, ""));
+      FixedUserView
+          fixedUserView = user.map(u -> new FixedUserView(u.getName(), u.getAvatar())).orElse(new FixedUserView(text, ""));
       newUser.setText("");
       if(user.isEmpty()){
-        userViews.add(userView);
+        fixedUserViews.add(fixedUserView);
         userService.addUser(text, "");
       }
       kids.getChildren().clear();
-      kids.getChildren().addAll(userViews);
+      kids.getChildren().addAll(fixedUserViews);
     }
   }
 
   public void saveUsers(){
-    this.userViews.forEach(uv -> userService.addUser(uv.getName(), uv.getAvatar()));
+    this.editableUserViews.forEach(uv -> userService.addUser(uv.getName(), uv.getAvatar()));
   }
 
   @FXML
@@ -177,19 +178,19 @@ public class ClassroomController implements Initializable {
       fillWithFixedActivities(fixedActivityViewStream);
       newActivity.setVisible(false);
       newUser.setVisible(false);
-      userViews = userService.fetchUsers().stream().map(k -> new UserView(k.getName(), k.getAvatar())).collect(
+      fixedUserViews = userService.fetchUsers().stream().map(k -> new FixedUserView(k.getName(), k.getAvatar())).collect(
           Collectors.toList());
       kids.getChildren().clear();
-      kids.getChildren().addAll(userViews);
+      kids.getChildren().addAll(fixedUserViews);
       saveBoardButton.setVisible(false);
     } else {
       fillWithEditableActivities(this.activityViews);
       newActivity.setVisible(true);
       newUser.setVisible(true);
-      userViews = userService.fetchUsers().stream().map(k -> new UserView(k.getName(), k.getAvatar())).collect(
+      editableUserViews = userService.fetchUsers().stream().map(k -> new EditableUserView(k.getName(), k.getAvatar())).collect(
           Collectors.toList());
       kids.getChildren().clear();
-      kids.getChildren().addAll(userViews);
+      kids.getChildren().addAll(editableUserViews);
       saveBoardButton.setVisible(true);
     }
   }

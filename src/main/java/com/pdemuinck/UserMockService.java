@@ -30,9 +30,17 @@ public class UserMockService implements UserService {
   @Override
   public void addUser(String name, String avatar) {
     User user = new User(name, avatar);
-    if (!users.contains(user)) {
+    if (!users.stream().anyMatch(u -> u.getName().equals(name))) {
       users.add(user);
       dataStore.saveUser(String.join(",", name, avatar));
+    } else {
+      String data = users.stream().distinct().map(a -> {
+        if (name.equals(a.getName())) {
+          a.setAvatar(avatar);
+        }
+        return String.join(",", a.getName(), a.getAvatar());
+      }).collect(Collectors.joining("\r\n"));
+      dataStore.overWriteUsers(data);
     }
   }
 

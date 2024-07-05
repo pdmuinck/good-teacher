@@ -15,13 +15,13 @@ import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
-public class UserView extends HBox {
+public class FixedUserView extends HBox {
 
   private String avatar;
   private String name;
   private ImageView imageView;
 
-  public UserView(String name, String avatar) {
+  public FixedUserView(String name, String avatar) {
     this.name = name;
     this.avatar = avatar;
     if(avatar.isBlank()){
@@ -30,33 +30,35 @@ public class UserView extends HBox {
       FileChooser fileChooser = new FileChooser();
       label.setOnMouseClicked(e -> {
         File selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
-        this.avatar = selectedFile.getAbsolutePath();
-        try {
-          FileInputStream fs = new FileInputStream(selectedFile.getAbsolutePath());
-          Image image = new Image(fs, 75, 75, false, false);
-          imageView = new ImageView(image);
-          imageView.setOnDragDetected((MouseEvent event) -> {
-            Dragboard db = imageView.startDragAndDrop(TransferMode.ANY);
-            db.setDragView(image);
-            db.setDragViewOffsetX(50.0);
-            db.setDragViewOffsetY(50.0);
-            ClipboardContent content = new ClipboardContent();
-            content.putString(String.join(",", name, avatar));
-            db.setContent(content);
-            imageView.setVisible(false);
-          });
-          imageView.setOnMouseDragged((MouseEvent event) -> {
-            event.setDragDetect(true);
-          });
-          Tooltip tp = new Tooltip(name);
-          tp.setShowDelay(Duration.millis(100));
-          tp.setShowDuration(Duration.millis(1500));
-          Tooltip.install(imageView, tp);
-          super.getChildren().add(imageView);
-          super.getChildren().remove(label);
-          Main.classroomController.saveUsers();
-        } catch (FileNotFoundException ex) {
-          throw new RuntimeException(ex);
+        if(selectedFile != null){
+          this.avatar = selectedFile.getAbsolutePath();
+          try {
+            FileInputStream fs = new FileInputStream(selectedFile.getAbsolutePath());
+            Image image = new Image(fs, 75, 75, false, false);
+            imageView = new ImageView(image);
+            imageView.setOnDragDetected((MouseEvent event) -> {
+              Dragboard db = imageView.startDragAndDrop(TransferMode.ANY);
+              db.setDragView(image);
+              db.setDragViewOffsetX(50.0);
+              db.setDragViewOffsetY(50.0);
+              ClipboardContent content = new ClipboardContent();
+              content.putString(String.join(",", name, avatar));
+              db.setContent(content);
+              imageView.setVisible(false);
+            });
+            imageView.setOnMouseDragged((MouseEvent event) -> {
+              event.setDragDetect(true);
+            });
+            Tooltip tp = new Tooltip(name);
+            tp.setShowDelay(Duration.millis(100));
+            tp.setShowDuration(Duration.millis(1500));
+            Tooltip.install(imageView, tp);
+            super.getChildren().add(imageView);
+            super.getChildren().remove(label);
+            Main.classroomController.saveUsers();
+          } catch (FileNotFoundException ex) {
+            throw new RuntimeException(ex);
+          }
         }
       });
 
