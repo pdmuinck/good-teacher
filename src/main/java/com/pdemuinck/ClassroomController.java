@@ -138,14 +138,7 @@ public class ClassroomController implements Initializable {
   public void removeActivity(EditableActivityView activity) {
     this.activityViews.remove(activity);
     fillWithEditableActivities(this.activityViews);
-  }
-
-  @FXML
-  public void saveBoard(MouseEvent event){
-    List<Activity> activities =
-        activityViews.stream().map(a -> new Activity(a.getName().getText(), a.getImageUrl(), a.getSpots().size()))
-            .collect(Collectors.toList());
-    activityService.saveBoard(activities);
+    activityService.hideActivity(activity.getName().getText());
   }
 
   @FXML
@@ -182,7 +175,6 @@ public class ClassroomController implements Initializable {
           Collectors.toList());
       kids.getChildren().clear();
       kids.getChildren().addAll(fixedUserViews);
-      saveBoardButton.setVisible(false);
     } else {
       fillWithEditableActivities(this.activityViews);
       newActivity.setVisible(true);
@@ -191,7 +183,6 @@ public class ClassroomController implements Initializable {
           Collectors.toList());
       kids.getChildren().clear();
       kids.getChildren().addAll(editableUserViews);
-      saveBoardButton.setVisible(true);
     }
   }
 }

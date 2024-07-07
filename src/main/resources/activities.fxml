@@ -21,7 +21,6 @@
                   </children></HBox>
                     <GridPane fx:id="activitiesPane" onDragExited="#reset" BorderPane.alignment="CENTER">
                     </GridPane>
-                    <Button fx:id="saveBoardButton" onMouseClicked="#saveBoard" text="Bewaar activiteiten bord" />
                     <ToggleButton fx:id="presentMode" onAction="#onPresentMode" text="presenteer modus" />
                 </VBox>
             </center>

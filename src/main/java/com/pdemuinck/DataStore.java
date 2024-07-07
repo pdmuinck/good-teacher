@@ -10,9 +10,7 @@ public interface DataStore {
 
   void saveUser(String user);
   void overWriteUsers(String data);
-  List<String> readActivities();
-
-  void writeActivityBoard(String board, String path, String fileName);
+  List<String> fetchActivities();
 
   List<String> fetchUsers();
 }

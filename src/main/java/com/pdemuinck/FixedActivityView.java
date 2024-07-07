@@ -86,7 +86,7 @@ public class FixedActivityView extends VBox {
           }
           imageView1.setImage(image2);
           imageView1.setPreserveRatio(true);
-          imageView1.setUserData(db.getString().split(",")[1]);
+          imageView1.setUserData(db.getString());
 
           activityService.joinActivity(name, userService.fetchUsers().stream().filter(
                   u -> u.getName().equals(db.getString().split(",")[0]) &&

@@ -1,12 +1,7 @@
 package com.pdemuinck;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,12 +40,21 @@ public class ActivityMockService implements ActivityService {
 
   @Override
   public List<Activity> fetchActivities() {
-    this.activities = dataStore.readActivities().stream().map(s -> {
-      String name = s.split(",")[0];
-      String imageUrl = s.split(",", -1)[1];
-      return new Activity(name, imageUrl, 4);
-    }).collect(Collectors.toList());
-    return activities;
+    try {
+      this.activities = dataStore.fetchActivities().stream().map(s -> {
+        String name = s.split(",", -1)[0];
+        String imageUrl = s.split(",", -1)[1];
+        try {
+          int spots = Integer.valueOf(s.split(",", -1)[2]);
+          return new Activity(name, imageUrl, spots);
+        } catch (NumberFormatException e) {
+          return new Activity(name, imageUrl, 0);
+        }
+      }).collect(Collectors.toList());
+      return activities;
+    } catch (ArrayIndexOutOfBoundsException e) {
+      return new ArrayList<>();
+    }
   }
 
   @Override
@@ -59,41 +63,49 @@ public class ActivityMockService implements ActivityService {
     if (!activities.contains(activity)) {
       activities.add(activity);
       dataStore.writeActivity(
-          String.join(",", activity.getName(), activity.getImageUrl()) + "\r\n");
+          String.join(",", activity.getName(), activity.getImageUrl(), "4", "true") + "\r\n");
       return activity;
     } else {
+      showActivity(name);
       return activities.stream().filter(a -> a.getName().equals(name)).findFirst().get();
     }
   }
 
-  @Override
-  public void updateActivityIcon(String name, String icon) {
-    this.activities = fetchActivities();
+  private void showActivity(String name) {
     String data = activities.stream().distinct().map(a -> {
       if (name.equals(a.getName())) {
-        a.setImageUrl(icon);
+        a.setShow(true);
       }
-      return String.join(",", a.getName(), a.getImageUrl());
+      return String.join(",", a.getName(), a.getImageUrl(), String.valueOf(a.getMaxSpots()),
+          String.valueOf(a.isShow()));
     }).collect(Collectors.joining("\r\n"));
     dataStore.overWriteActivities(data + "\r\n");
   }
 
   @Override
-  public void saveBoard(List<Activity> activities) {
-    ObjectMapper objectMapper = new ObjectMapper();
-    try {
-      LocalDate now = LocalDate.now();
-      String s = objectMapper.writeValueAsString(activities);
-      dataStore.writeActivityBoard(s,
-          String.join(File.separator, System.getProperty("user.home"), "AppData", "Roaming",
-              "GoodTeacher", String.valueOf(now.getYear()),
-              String.valueOf(now.getMonthValue()), String.valueOf(now.getDayOfMonth())),
-          String.join("_", String.valueOf(new Date().getTime()), "activities.json"));
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-
+  public void updateActivity(String name, String icon, int spots) {
+    this.activities = fetchActivities();
+    String data = activities.stream().distinct().map(a -> {
+      if (name.equals(a.getName())) {
+        a.setImageUrl(icon);
+        a.setMaxSpots(spots);
+      }
+      return String.join(",", a.getName(), a.getImageUrl(), String.valueOf(a.getMaxSpots()),
+          String.valueOf(a.isShow()));
+    }).collect(Collectors.joining("\r\n"));
+    dataStore.overWriteActivities(data + "\r\n");
   }
 
-
+  @Override
+  public void hideActivity(String name) {
+    this.activities = fetchActivities();
+    String data = activities.stream().distinct().map(a -> {
+      if (name.equals(a.getName())) {
+        a.setShow(false);
+      }
+      return String.join(",", a.getName(), a.getImageUrl(), String.valueOf(a.getMaxSpots()),
+          String.valueOf(a.isShow()));
+    }).collect(Collectors.joining("\r\n"));
+    dataStore.overWriteActivities(data + "\r\n");
+  }
 }

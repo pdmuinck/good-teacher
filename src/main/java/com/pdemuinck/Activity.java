@@ -17,6 +17,7 @@ public class Activity {
   @JsonIgnore
   private int availableSpots;
   private int maxSpots;
+  private boolean show = true;
   private String imageUrl;
   @JsonIgnore
   private final List<ActivityEvent> events = new ArrayList<>();
@@ -39,6 +40,13 @@ public class Activity {
     this.name = name;
     this.imageUrl = imageUrl;
     this.maxSpots = maxSpots;
+  }
+
+  public Activity(String name, String imageUrl, int maxSpots, boolean show){
+    this.name = name;
+    this.imageUrl = imageUrl;
+    this.maxSpots = maxSpots;
+    this.show = show;
   }
 
   public Activity(String name, int maxSpots) {
@@ -178,5 +186,13 @@ public class Activity {
 
   public void setImageUrl(String imageUrl) {
     this.imageUrl = imageUrl;
+  }
+
+  public boolean isShow() {
+    return show;
+  }
+
+  public void setShow(boolean show) {
+    this.show = show;
   }
 }

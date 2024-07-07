@@ -12,8 +12,6 @@ public interface ActivityService {
 
   Activity addActivity(String name);
 
-  void updateActivityIcon(String name, String icon);
-
-  void saveBoard(List<Activity> activities);
-
+  void updateActivity(String name, String icon, int spots);
+  void hideActivity(String name);
 }

@@ -1,6 +1,8 @@
 package com.pdemuinck;
 
 
+import atlantafx.base.theme.PrimerDark;
+import atlantafx.base.theme.PrimerLight;
 import java.io.IOException;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -14,6 +16,7 @@ public class Main extends Application {
 
   @Override
   public void start(Stage stage) throws IOException {
+    Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
     FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("activities.fxml"));
     Parent root = loader.load();
     classroomController = loader.getController();

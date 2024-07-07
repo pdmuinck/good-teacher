@@ -48,14 +48,15 @@ public class EditableActivityView extends VBox {
     Text minus = new Text("-");
     plus.setOnMouseClicked((MouseEvent event) -> {
       this.spots.add(prepareImageView(image));
+      activityService.updateActivity(this.name.getText(), this.imageUrl, this.spots.size());
       super.getChildren().clear();
       HBox box = new HBox();
       box.getChildren().addAll(this.name, cancel, plus, minus);
       super.getChildren().add(box);
-      if (!imageUrl.isBlank()) {
+      if (!this.imageUrl.isBlank()) {
         Image icon = null;
         try {
-          icon = new Image(new FileInputStream(imageUrl), 150, 150, false, false);
+          icon = new Image(new FileInputStream(this.imageUrl), 150, 150, false, false);
           ImageView activityImage = new ImageView(icon);
           super.getChildren().add(activityImage);
         } catch (FileNotFoundException e) {
@@ -67,15 +68,16 @@ public class EditableActivityView extends VBox {
     minus.setOnMouseClicked((MouseEvent event) -> {
       if (this.spots.size() > 0) {
         this.spots.removeLast();
+        activityService.updateActivity(this.name.getText(), this.imageUrl, this.spots.size());
         super.getChildren().clear();
         HBox box = new HBox();
         box.getChildren().addAll(this.name, cancel, plus, minus);
         super.getChildren().add(box);
 
-        if (!imageUrl.isBlank()) {
+        if (!this.imageUrl.isBlank()) {
           Image icon = null;
           try {
-            icon = new Image(new FileInputStream(imageUrl), 150, 150, false, false);
+            icon = new Image(new FileInputStream(this.imageUrl), 150, 150, false, false);
             ImageView activityImage = new ImageView(icon);
             super.getChildren().add(activityImage);
           } catch (FileNotFoundException e) {
@@ -90,7 +92,7 @@ public class EditableActivityView extends VBox {
       FileChooser fileChooser = new FileChooser();
       File file = fileChooser.showOpenDialog(this.getScene().getWindow());
       if(file != null){
-        activityService.updateActivityIcon(name, file.getAbsolutePath());
+        activityService.updateActivity(name, file.getAbsolutePath(), this.spots.size());
         this.imageUrl = file.getAbsolutePath();
         try {
           Image icon = new Image(new FileInputStream(file.getAbsolutePath()), 150, 150, false, false);
@@ -98,7 +100,7 @@ public class EditableActivityView extends VBox {
           activityImage.setOnMouseClicked((MouseEvent e) -> {
             File newImage = fileChooser.showOpenDialog(this.getScene().getWindow());
             if(newImage != null){
-              activityService.updateActivityIcon(name, newImage.getAbsolutePath());
+              activityService.updateActivity(name, newImage.getAbsolutePath(), this.spots.size());
               this.imageUrl = newImage.getAbsolutePath();
               Image newIcon = null;
               try {
@@ -136,7 +138,7 @@ public class EditableActivityView extends VBox {
           FileChooser fileChooser = new FileChooser();
           File file = fileChooser.showOpenDialog(this.getScene().getWindow());
           if(file != null){
-            activityService.updateActivityIcon(name, file.getAbsolutePath());
+            activityService.updateActivity(name, file.getAbsolutePath(), this.spots.size());
             this.imageUrl = file.getAbsolutePath();
             try {
               Image newIcon = new Image(new FileInputStream(file.getAbsolutePath()), 150, 150, false, false);
