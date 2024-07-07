@@ -56,7 +56,7 @@ public class ClassroomController implements Initializable {
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
     List<Activity> activities = activityService.fetchActivities();
-    this.activityViews = activities.stream().map(a -> new EditableActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots())).collect(
+    this.activityViews = activities.stream().filter(Activity::isShow).map(a -> new EditableActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(), activityService)).collect(
         Collectors.toList());
     activitiesPane.setHgap(10);
     fillWithEditableActivities(this.activityViews);
@@ -130,7 +130,7 @@ public class ClassroomController implements Initializable {
     if(event.getCode() == KeyCode.ENTER && !newActivity.getText().isBlank()){
       String text = newActivity.getText();
       Activity activity = activityService.addActivity(text);
-      activityViews.add(new EditableActivityView(activity.getName(), activity.getImageUrl(), activity.getMaxSpots()));
+      activityViews.add(new EditableActivityView(activity.getName(), activity.getImageUrl(), activity.getMaxSpots(), activityService));
       fillWithEditableActivities(this.activityViews);
       newActivity.setText("");
     }
@@ -166,7 +166,7 @@ public class ClassroomController implements Initializable {
   @FXML
   public void onPresentMode(ActionEvent event){
     if(this.presentMode.isSelected()){
-      List<FixedActivityView> fixedActivityViewStream = this.activityViews.stream()
+      List<FixedActivityView> fixedActivityViewStream = activityViews.stream()
           .map(a -> new FixedActivityView(a.getName().getText(), a.getImageUrl(), a.getSpots().size())).collect(
               Collectors.toList());
       fillWithFixedActivities(fixedActivityViewStream);

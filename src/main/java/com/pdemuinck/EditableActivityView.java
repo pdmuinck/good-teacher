@@ -28,11 +28,12 @@ public class EditableActivityView extends VBox {
 
   private List<ImageView> spots;
 
-  private ActivityService activityService = new ActivityMockService(new FileDataStore());
+  private ActivityService activityService;
 
   private String imageUrl;
 
-  public EditableActivityView(String name, String imageUrl, int spots) {
+  public EditableActivityView(String name, String imageUrl, int spots, ActivityService activityService) {
+    this.activityService = activityService;
     this.name = new Label(name);
     this.imageUrl = imageUrl;
 

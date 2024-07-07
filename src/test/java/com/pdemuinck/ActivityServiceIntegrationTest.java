@@ -13,7 +13,7 @@ public class ActivityServiceIntegrationTest {
   File tempDir;
 
   @Test
-  public void creates_activities_file_if_does_not_exist_yet_when_trying_to_add_an_activity(){
+  public void creates_activities_file_if_does_not_exist_yet_when_trying_to_add_an_activity() {
     DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
     ActivityService activityService = new ActivityMockService(dataStore);
     activityService.addActivity("painting");
@@ -22,7 +22,7 @@ public class ActivityServiceIntegrationTest {
   }
 
   @Test
-  public void stores_activity_as_visible_by_default(){
+  public void stores_activity_as_visible_by_default() {
     DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
     ActivityService activityService = new ActivityMockService(dataStore);
     activityService.addActivity("painting");
@@ -31,17 +31,17 @@ public class ActivityServiceIntegrationTest {
   }
 
   @Test
-  public void updates_activity_if_needed(){
+  public void updates_activity_if_needed() {
     DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
     ActivityService activityService = new ActivityMockService(dataStore);
     activityService.addActivity("painting");
     activityService.updateActivity("painting", "image2.png", 15);
     List<Activity> activities = activityService.fetchActivities();
-    assertThat(activities).allMatch(a -> a.getImageUrl().equals("image2.png") && a.getMaxSpots() == 15);
+    assertThat(activities).containsExactly(new Activity("painting", "image2.png", 15));
   }
 
   @Test
-  public void hides_activity(){
+  public void hides_activity() {
     DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
     ActivityService activityService = new ActivityMockService(dataStore);
     activityService.addActivity("painting");
@@ -59,8 +59,11 @@ public class ActivityServiceIntegrationTest {
     activityService.startAllActivities();
     Thread.sleep(1000);
     activityService.pauseAllActivities();
+    activityService.startAllActivities();
+    Thread.sleep(1000);
+    activityService.pauseAllActivities();
     List<TimeReportRow> timeReportForCharlie = activityService.fetchTimeReport("charlie");
-    assertThat(timeReportForCharlie).hasSize(1);
-    assertThat(timeReportForCharlie).anyMatch(t -> t.getTime() > 1000);
+    assertThat(timeReportForCharlie.stream().map(TimeReportRow::getTime)
+        .reduce(0L, Long::sum)).isGreaterThan(2000L);
   }
 }

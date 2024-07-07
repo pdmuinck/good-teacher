@@ -1,7 +1,6 @@
 package com.pdemuinck;
 
 
-import atlantafx.base.theme.PrimerDark;
 import atlantafx.base.theme.PrimerLight;
 import java.io.IOException;
 import javafx.application.Application;

@@ -17,16 +17,11 @@ public class Activity {
   private int maxSpots;
   private boolean show = true;
   private String imageUrl;
-  private final List<ActivityEvent> events = new ArrayList<>();
   private LocalDateTime firstStartTs, lastStartTs, endTs;
   private long totalDuration = 0;
   private final Map<String, LocalDateTime> joinTimeByKid = new HashMap<>();
   private final Map<String, Long> durationByKid = new HashMap<>();
-  private final Map<String, ActivityFeedback> feedbackByKid = new HashMap<>();
   private List<String> blackList = new ArrayList<>();
-
-  public Activity() {
-  }
 
   public Activity(String name, String imageUrl, int maxSpots) {
     this.name = name;
@@ -50,7 +45,6 @@ public class Activity {
   }
 
   public void start(LocalDateTime eventTs) {
-    events.add(new ActivityEvent(eventTs, ActivityEventType.ACTIVITY_STARTED));
     if (lastStartTs == null && firstStartTs == null) {
       firstStartTs = lastStartTs = eventTs;
     } else {
@@ -62,7 +56,6 @@ public class Activity {
     if (eventTs.isBefore(lastStartTs)) {
       throw new RuntimeException("Cannot accept a pause event that is before the start event");
     }
-    events.add(new ActivityEvent(eventTs, ActivityEventType.ACTIVITY_PAUSED));
     endTs = eventTs;
     totalDuration += Duration.between(lastStartTs, endTs).toMillis();
     joinTimeByKid.forEach((name, startTs) -> {
@@ -77,10 +70,8 @@ public class Activity {
   }
 
   public void join(LocalDateTime eventTs, String name) {
-    events.add(new ActivityEvent(eventTs, ActivityEventType.ACTIVITY_JOINED));
     if (blackList.contains(name)) {
-      events.add(new ActivityEvent(eventTs, ActivityEventType.ACTIVITY_NOT_ALLOWED));
-      throw new RuntimeException("Kid is not allowed to join");
+      throw new RuntimeException("User is not allowed to join");
     }
     if (availableSpots > 0) {
       joinTimeByKid.put(name, eventTs);
@@ -92,7 +83,6 @@ public class Activity {
   }
 
   public void leave(LocalDateTime eventTs, String name) {
-    events.add(new ActivityEvent(eventTs, ActivityEventType.ACTIVITY_LEFT));
     availableSpots++;
     LocalDateTime joinTs = joinTimeByKid.get(name);
     if (lastStartTs != null) {
@@ -106,11 +96,6 @@ public class Activity {
         }
       }
     }
-  }
-
-  public void feedback(LocalDateTime eventTs, String name, ActivityFeedback feedback) {
-    events.add(new ActivityEvent(eventTs, ActivityEventType.ACTIVITY_FEEDBACK));
-    feedbackByKid.put(name, feedback);
   }
 
   public long getTotalDuration() {
@@ -153,6 +138,7 @@ public class Activity {
     return name;
   }
 
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -162,12 +148,13 @@ public class Activity {
       return false;
     }
     Activity activity = (Activity) o;
-    return Objects.equals(name, activity.name);
+    return maxSpots == activity.maxSpots && Objects.equals(name, activity.name) &&
+        Objects.equals(imageUrl, activity.imageUrl);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name);
+    return Objects.hash(name, maxSpots, imageUrl);
   }
 
   public void setName(String name) {
@@ -188,5 +175,14 @@ public class Activity {
 
   public void setShow(boolean show) {
     this.show = show;
+  }
+
+  @Override
+  public String toString() {
+    return "Activity{" +
+        "name='" + name + '\'' +
+        ", maxSpots=" + maxSpots +
+        ", imageUrl='" + imageUrl + '\'' +
+        '}';
   }
 }

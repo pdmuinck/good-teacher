@@ -18,4 +18,8 @@ public interface ActivityService {
   void hideActivity(String name);
 
   List<TimeReportRow> fetchTimeReport(String name);
+
+  void addToBlackList(String activity, String user);
+
+  List<Activity> getActivities();
 }

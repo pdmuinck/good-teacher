@@ -17,4 +17,8 @@ public interface DataStore {
   void saveActivityTime(String data);
 
   List<String> fetchActivityTime();
+
+  void saveBlacklist(String data);
+
+  List<String> fetchBlackLists();
 }

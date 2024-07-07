@@ -3,6 +3,7 @@ package com.pdemuinck;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javafx.scene.image.Image;
@@ -23,6 +24,7 @@ public class FixedActivityView extends VBox {
 
   private ActivityService activityService = new ActivityMockService(new FileDataStore());
   private UserService userService = new UserMockService(new FileDataStore());
+  private boolean full = false;
 
   public FixedActivityView(String name, String imageUrl, int spots) {
     this.name = name;
@@ -53,6 +55,10 @@ public class FixedActivityView extends VBox {
     return gridPane;
   }
 
+  public void setFull(boolean full) {
+    this.full = full;
+  }
+
   private ImageView prepareImageView(Image basic) {
     ImageView imageView1 = new ImageView(basic);
     imageView1.setUserData("icons/empty_box.png");
@@ -69,6 +75,11 @@ public class FixedActivityView extends VBox {
       imageView1.setUserData("icons/empty_box.png");
     });
     imageView1.setOnDragOver((DragEvent event) -> {
+      List<Activity> activities = activityService.getActivities();
+      if(activities.stream().anyMatch(a -> a.getName().equals(this.name) && a.getAvailableSpots() == 0)){
+        event.acceptTransferModes(TransferMode.NONE);
+        super.setVisible(false);
+      }
       if (event.getGestureSource() != imageView1 && event.getDragboard().hasString() &&
           imageView1.getUserData().equals("icons/empty_box.png")) {
         event.acceptTransferModes(TransferMode.ANY);

@@ -118,4 +118,23 @@ public class FileDataStore implements DataStore {
       throw new RuntimeException(e);
     }
   }
+
+  @Override
+  public void saveBlacklist(String data) {
+    write(data, "blacklist.csv", StandardOpenOption.APPEND);
+  }
+
+  @Override
+  public List<String> fetchBlackLists() {
+    String path = String.join(File.separator, appHome, "blacklist.csv");
+    try {
+      if(Files.exists(Path.of(path))){
+        return Files.readAllLines(Path.of(path));
+      } else {
+        return new ArrayList<>();
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }
