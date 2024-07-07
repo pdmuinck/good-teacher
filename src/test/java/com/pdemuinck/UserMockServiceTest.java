@@ -36,7 +36,7 @@ class UserMockServiceTest {
 
     // Then
     Mockito.verify(dataStoreMock, Mockito.times(1)).saveUser("Charlie,abc");
-    Mockito.verify(dataStoreMock, Mockito.times(1)).saveUser("Charlie,def");
+    Mockito.verify(dataStoreMock, Mockito.times(1)).overWriteUsers("Charlie,def");
   }
 
   @Test

@@ -3,8 +3,6 @@ package com.pdemuinck;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -15,7 +13,7 @@ class ActivityTest {
     Activity activity = new Activity("drawing", 4);
     activity.start(LocalDateTime.of(2024, 6, 12, 0, 0));
     activity.pause(LocalDateTime.of(2024, 6, 12, 0, 30));
-    assertThat(activity.getTotalDuration()).isEqualTo(30);
+    assertThat(activity.getTotalDuration()).isEqualTo(30 * 1000 * 60);
   }
 
   @Test
@@ -38,7 +36,7 @@ class ActivityTest {
     activity.pause(LocalDateTime.of(2024, 6, 12, 0, 30));
     activity.start(LocalDateTime.of(2024, 6, 12, 1, 0));
     activity.pause(LocalDateTime.of(2024, 6, 12, 1, 45));
-    assertThat(activity.getTotalDuration()).isEqualTo(75);
+    assertThat(activity.getTotalDuration()).isEqualTo(75 * 1000 * 60);
   }
 
   @Test
@@ -64,10 +62,10 @@ class ActivityTest {
     activity.join(LocalDateTime.of(2024, 6, 12, 0, 0), "Charlie");
     activity.start(LocalDateTime.of(2024, 6, 12, 0, 5));
     activity.pause(LocalDateTime.of(2024, 6, 12, 0, 10));
-    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(5);
+    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(5 * 1000 * 60);
     activity.start(LocalDateTime.of(2024, 6, 12, 0, 15));
     activity.pause(LocalDateTime.of(2024, 6, 12, 0, 20));
-    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(10);
+    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(10 * 1000 * 60);
   }
 
   @Test
@@ -79,10 +77,10 @@ class ActivityTest {
     assertThat(activity.getDurationForKid("Charlie")).isEqualTo(0);
     activity.start(LocalDateTime.of(2024, 6, 12, 0, 15));
     activity.pause(LocalDateTime.of(2024, 6, 12, 0, 20));
-    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(5);
+    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(5 * 1000 * 60);
     activity.start(LocalDateTime.of(2024, 6, 12, 0, 25));
     activity.pause(LocalDateTime.of(2024, 6, 12, 0, 30));
-    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(10);
+    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(10 * 1000 * 60);
   }
 
   @Test
@@ -91,10 +89,10 @@ class ActivityTest {
     activity.start(LocalDateTime.of(2024, 6, 12, 0, 5));
     activity.join(LocalDateTime.of(2024, 6, 12, 0, 7), "Charlie");
     activity.pause(LocalDateTime.of(2024, 6, 12, 0, 10));
-    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(3);
+    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(3 * 1000 * 60);
     activity.start(LocalDateTime.of(2024, 6, 12, 0, 15));
     activity.pause(LocalDateTime.of(2024, 6, 12, 0, 20));
-    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(8);
+    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(8 * 1000 * 60);
   }
 
   @Test
@@ -119,7 +117,7 @@ class ActivityTest {
     activity.join(LocalDateTime.of(2024, 6, 12, 0, 0), "Charlie");
     activity.start(LocalDateTime.of(2024, 6, 12, 0, 5));
     activity.leave(LocalDateTime.of(2024, 6, 12, 0, 10), "Charlie");
-    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(5);
+    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(5 * 1000 * 60);
   }
 
   @Test
@@ -129,7 +127,7 @@ class ActivityTest {
     activity.start(LocalDateTime.of(2024, 6, 12, 0, 5));
     activity.pause(LocalDateTime.of(2024, 6, 12, 0, 10));
     activity.leave(LocalDateTime.of(2024, 6, 12, 0, 15), "Charlie");
-    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(5);
+    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(5 * 1000 * 60);
   }
 
   @Test
@@ -138,10 +136,10 @@ class ActivityTest {
     activity.join(LocalDateTime.of(2024, 6, 12, 0, 0), "Charlie");
     activity.start(LocalDateTime.of(2024, 6, 12, 0, 5));
     activity.leave(LocalDateTime.of(2024, 6, 12, 0, 10), "Charlie");
-    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(5L);
+    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(5 * 1000 * 60);
     activity.join(LocalDateTime.of(2024, 6, 12, 0, 15), "Charlie");
     activity.pause(LocalDateTime.of(2024, 6, 12, 0, 20));
-    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(10L);
+    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(10 * 1000 * 60);
   }
 
   @Test
@@ -150,18 +148,10 @@ class ActivityTest {
     activity.join(LocalDateTime.of(2024, 6, 12, 0, 0), "Charlie");
     activity.start(LocalDateTime.of(2024, 6, 12, 0, 5));
     activity.leave(LocalDateTime.of(2024, 6, 12, 0, 10), "Charlie");
-    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(5L);
+    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(5 * 1000 * 60);
     activity.join(LocalDateTime.of(2024, 6, 12, 0, 15), "Charlie");
     activity.leave(LocalDateTime.of(2024, 6, 12, 0, 20), "Charlie");
-    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(10L);
-  }
-
-  @Test
-  public void testSo(){
-    assertThat(Math.floorDiv(1, 4)).isEqualTo(0);
-    assertThat(Math.floorDiv(2, 4)).isEqualTo(0);
-    assertThat(Math.floorDiv(3, 4)).isEqualTo(1);
-    assertThat(Math.floorDiv(4, 4)).isEqualTo(1);
+    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(10 * 1000 * 60);
   }
 
   @Test

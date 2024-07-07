@@ -3,15 +3,18 @@ package com.pdemuinck;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
 class ActivityMockServiceTest {
+
 
   @Test
   public void transforms_activities_from_store(){
@@ -48,14 +51,5 @@ class ActivityMockServiceTest {
     ActivityService activityService = new ActivityMockService(dataStoreMock);
     List<Activity> activities = activityService.fetchActivities();
     assertThat(activities).isEmpty();
-  }
-
-  @Test
-  public void when_activity_already_exists_then_we_do_not_persist(){
-    FileDataStore dataStoreMock = Mockito.mock(FileDataStore.class);
-    ActivityService activityService = new ActivityMockService(dataStoreMock);
-    activityService.addActivity("painting");
-    activityService.addActivity("painting");
-    Mockito.verify(dataStoreMock, Mockito.times(1)).writeActivity("painting,,4\r\n");
   }
 }

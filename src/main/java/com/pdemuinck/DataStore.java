@@ -13,4 +13,8 @@ public interface DataStore {
   List<String> fetchActivities();
 
   List<String> fetchUsers();
+
+  void saveActivityTime(String data);
+
+  List<String> fetchActivityTime();
 }

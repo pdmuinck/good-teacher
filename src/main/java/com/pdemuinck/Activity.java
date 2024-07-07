@@ -1,35 +1,27 @@
 package com.pdemuinck;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Activity {
   private String name;
-  @JsonIgnore
   private int availableSpots;
   private int maxSpots;
   private boolean show = true;
   private String imageUrl;
-  @JsonIgnore
   private final List<ActivityEvent> events = new ArrayList<>();
-  @JsonIgnoreProperties
   private LocalDateTime firstStartTs, lastStartTs, endTs;
-  @JsonIgnore
   private long totalDuration = 0;
-  @JsonIgnore
   private final Map<String, LocalDateTime> joinTimeByKid = new HashMap<>();
-  @JsonIgnore
   private final Map<String, Long> durationByKid = new HashMap<>();
-  @JsonIgnore
   private final Map<String, ActivityFeedback> feedbackByKid = new HashMap<>();
   private List<String> blackList = new ArrayList<>();
 
@@ -40,12 +32,14 @@ public class Activity {
     this.name = name;
     this.imageUrl = imageUrl;
     this.maxSpots = maxSpots;
+    this.availableSpots = maxSpots;
   }
 
-  public Activity(String name, String imageUrl, int maxSpots, boolean show){
+  public Activity(String name, String imageUrl, int maxSpots, boolean show) {
     this.name = name;
     this.imageUrl = imageUrl;
     this.maxSpots = maxSpots;
+    this.availableSpots = maxSpots;
     this.show = show;
   }
 
@@ -70,14 +64,14 @@ public class Activity {
     }
     events.add(new ActivityEvent(eventTs, ActivityEventType.ACTIVITY_PAUSED));
     endTs = eventTs;
-    totalDuration += Duration.between(lastStartTs, endTs).toMinutes();
+    totalDuration += Duration.between(lastStartTs, endTs).toMillis();
     joinTimeByKid.forEach((name, startTs) -> {
       if (startTs.isAfter(lastStartTs)) {
         durationByKid.computeIfPresent(name,
-            (key, duration) -> duration + Duration.between(startTs, eventTs).toMinutes());
+            (key, duration) -> duration + Duration.between(startTs, eventTs).toMillis());
       } else {
         durationByKid.computeIfPresent(name,
-            (key, duration) -> duration + Duration.between(lastStartTs, eventTs).toMinutes());
+            (key, duration) -> duration + Duration.between(lastStartTs, eventTs).toMillis());
       }
     });
   }
@@ -105,10 +99,10 @@ public class Activity {
       if (endTs == null || !endTs.isBefore(eventTs)) {
         if (joinTs.isBefore(eventTs) && joinTs.isAfter(lastStartTs)) {
           durationByKid.computeIfPresent(name,
-              (key, duration) -> duration + Duration.between(joinTs, eventTs).toMinutes());
+              (key, duration) -> duration + Duration.between(joinTs, eventTs).toMillis());
         } else {
           durationByKid.computeIfPresent(name,
-              (key, duration) -> duration + Duration.between(lastStartTs, eventTs).toMinutes());
+              (key, duration) -> duration + Duration.between(lastStartTs, eventTs).toMillis());
         }
       }
     }
@@ -131,6 +125,14 @@ public class Activity {
     return durationByKid.get(name);
   }
 
+  public String getDurationByKid() {
+    return this.durationByKid.entrySet().stream()
+        .map(e -> String.join(",", e.getKey(), this.name,
+            LocalDate.now().format(DateTimeFormatter.ISO_DATE), String.valueOf(e.getValue())))
+        .collect(
+            Collectors.joining("\r\n"));
+  }
+
   public int getMaxSpots() {
     return maxSpots;
   }
@@ -151,14 +153,6 @@ public class Activity {
     return name;
   }
 
-  public String toJsonString() {
-    ObjectMapper objectMapper = new ObjectMapper();
-    try {
-      return objectMapper.writeValueAsString(this);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-  }
   @Override
   public boolean equals(Object o) {
     if (this == o) {

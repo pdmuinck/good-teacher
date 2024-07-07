@@ -177,6 +177,8 @@ public class EditableActivityView extends VBox {
       content.putString((String) imageView1.getUserData());
       db.setContent(content);
       activityService.leaveActivity(this.name.getText(), (String) imageView1.getUserData());
+      Main.classroomController.updateActivityChange(
+          String.format("%s left activity %s", imageView1.getUserData(), name));
       imageView1.setImage(basic);
       imageView1.setUserData("icons/empty_box.png");
     });
@@ -202,6 +204,8 @@ public class EditableActivityView extends VBox {
           imageView1.setPreserveRatio(true);
           imageView1.setUserData(db.getString());
           activityService.joinActivity(this.name.getText(), db.getString());
+          Main.classroomController.updateActivityChange(
+              String.format("%s joined activity %s", this.name.getText(), db.getString()));
         } else {
           event.setDropCompleted(false);
         }

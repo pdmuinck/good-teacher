@@ -1,5 +1,6 @@
 package com.pdemuinck;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +16,11 @@ public class ActivityMockService implements ActivityService {
   }
 
   @Override
-  public void joinActivity(String name, String avatar) {
-    activities.stream().filter(a -> a.getName().equals(name) && a.getAvailableSpots() > 0)
+  public void joinActivity(String activityName, String userName) {
+    activities = fetchActivities();
+    activities.stream().filter(a -> a.getName().equals(activityName) && a.getAvailableSpots() > 0)
         .findFirst().ifPresent(a -> a.join(
-            LocalDateTime.now(), avatar));
-    Main.classroomController.updateActivityChange(
-        String.format("%s joined activity %s", avatar, name));
+            LocalDateTime.now(), userName));
   }
 
   @Override
@@ -28,15 +28,21 @@ public class ActivityMockService implements ActivityService {
     activities.stream().filter(a -> a.getName().equals(name) && a.getAvailableSpots() > 0)
         .findFirst().ifPresent(a -> a.leave(
             LocalDateTime.now(), avatar));
-    Main.classroomController.updateActivityChange(
-        String.format("%s left activity %s", avatar, name));
   }
 
   @Override
   public void startAllActivities() {
     activities.forEach(activity -> activity.start(LocalDateTime.now()));
-    Main.classroomController.updateActivityChange("All activities got started");
   }
+
+  @Override
+  public void pauseAllActivities() {
+    activities.forEach(activity -> activity.pause(LocalDateTime.now()));
+    String data =
+        activities.stream().map(a -> a.getDurationByKid()).collect(Collectors.joining("\r\n"));
+    dataStore.saveActivityTime(data);
+  }
+
 
   @Override
   public List<Activity> fetchActivities() {
@@ -46,11 +52,13 @@ public class ActivityMockService implements ActivityService {
         String imageUrl = s.split(",", -1)[1];
         try {
           int spots = Integer.valueOf(s.split(",", -1)[2]);
-          return new Activity(name, imageUrl, spots);
-        } catch (NumberFormatException e) {
+          boolean show = Boolean.valueOf(s.split(",", -1)[3]);
+          return new Activity(name, imageUrl, spots, show);
+        } catch (Exception e) {
           return new Activity(name, imageUrl, 0);
         }
       }).collect(Collectors.toList());
+      activities = activities.stream().filter(a -> !a.getName().isBlank()).toList();
       return activities;
     } catch (ArrayIndexOutOfBoundsException e) {
       return new ArrayList<>();
@@ -60,15 +68,25 @@ public class ActivityMockService implements ActivityService {
   @Override
   public Activity addActivity(String name) {
     Activity activity = new Activity(name, "", 4);
+    addActivity(activity);
+    return activity;
+  }
+
+  private void addActivity(Activity activity) {
     if (!activities.contains(activity)) {
       activities.add(activity);
       dataStore.writeActivity(
           String.join(",", activity.getName(), activity.getImageUrl(), "4", "true") + "\r\n");
-      return activity;
     } else {
-      showActivity(name);
-      return activities.stream().filter(a -> a.getName().equals(name)).findFirst().get();
+      showActivity(activity.getName());
     }
+  }
+
+  @Override
+  public Activity addActivity(String name, String imageUrl, int spots) {
+    Activity activity = new Activity(name, imageUrl, spots);
+    addActivity(activity);
+    return activity;
   }
 
   private void showActivity(String name) {
@@ -85,7 +103,7 @@ public class ActivityMockService implements ActivityService {
   @Override
   public void updateActivity(String name, String icon, int spots) {
     this.activities = fetchActivities();
-    String data = activities.stream().distinct().map(a -> {
+    String data = this.activities.stream().distinct().map(a -> {
       if (name.equals(a.getName())) {
         a.setImageUrl(icon);
         a.setMaxSpots(spots);
@@ -107,5 +125,16 @@ public class ActivityMockService implements ActivityService {
           String.valueOf(a.isShow()));
     }).collect(Collectors.joining("\r\n"));
     dataStore.overWriteActivities(data + "\r\n");
+  }
+
+  @Override
+  public List<TimeReportRow> fetchTimeReport(String name) {
+    List<String> timings = dataStore.fetchActivityTime();
+    return timings.stream().map(this::parse).collect(Collectors.toList());
+  }
+
+  private TimeReportRow parse(String data){
+    String[] split = data.split(",", -1);
+    return new TimeReportRow(split[0], split[1], LocalDate.parse(split[2]), Long.valueOf(split[3]));
   }
 }

@@ -63,6 +63,8 @@ public class FixedActivityView extends VBox {
       content.putString((String) imageView1.getUserData());
       db.setContent(content);
       activityService.leaveActivity(this.name, (String) imageView1.getUserData());
+      Main.classroomController.updateActivityChange(
+          String.format("%s left activity %s", imageView1.getUserData(), name));
       imageView1.setImage(basic);
       imageView1.setUserData("icons/empty_box.png");
     });
@@ -92,6 +94,8 @@ public class FixedActivityView extends VBox {
                   u -> u.getName().equals(db.getString().split(",")[0]) &&
                       u.getAvatar().equals(db.getString().split(",")[1]))
               .findFirst().get().getName());
+          Main.classroomController.updateActivityChange(
+              String.format("%s joined activity %s", db.getString().split(",")[0], db.getString().split(",")[1]));
         } else {
           event.setDropCompleted(false);
         }

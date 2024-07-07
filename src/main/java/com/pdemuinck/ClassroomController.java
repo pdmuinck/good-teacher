@@ -109,6 +109,7 @@ public class ClassroomController implements Initializable {
   @FXML
   public void startAllActivities(MouseEvent event) {
     activityService.startAllActivities();
+    updateActivityChange("All activities got started");
   }
 
   public void updateActivityChange(String change) {
