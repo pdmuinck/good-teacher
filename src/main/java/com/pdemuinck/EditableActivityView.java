@@ -1,5 +1,7 @@
 package com.pdemuinck;
 
+import atlantafx.base.layout.InputGroup;
+import atlantafx.base.theme.Styles;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -7,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -20,6 +23,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
+import org.kordamp.ikonli.feather.Feather;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 public class EditableActivityView extends VBox {
 
@@ -38,21 +43,26 @@ public class EditableActivityView extends VBox {
     this.imageUrl = imageUrl;
 
     this.name.setAlignment(Pos.TOP_CENTER);
-    Text cancel = new Text("x");
+    Button cancel = new Button("", new FontIcon(Feather.X_CIRCLE));
+    cancel.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.DANGER);
+    Button plus = new Button("", new FontIcon(Feather.PLUS));
+    cancel.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.SUCCESS);
+    Button minus = new Button("", new FontIcon(Feather.MINUS));
+    cancel.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.DANGER);
+    Button addImage = new Button("", new FontIcon(Feather.IMAGE));
     cancel.setOnMouseClicked((MouseEvent event) -> {
       Main.classroomController.removeActivity(this);
     });
     Image image = new Image(getClass().getClassLoader().getResourceAsStream("icons/empty_box.png"));
     this.spots = IntStream.range(0, spots).boxed().map(x -> prepareImageView(image)).collect(
         Collectors.toList());
-    Text plus = new Text("+");
-    Text minus = new Text("-");
+    var group = new InputGroup(addImage, plus, minus, cancel);
     plus.setOnMouseClicked((MouseEvent event) -> {
       this.spots.add(prepareImageView(image));
       activityService.updateActivity(this.name.getText(), this.imageUrl, this.spots.size());
       super.getChildren().clear();
       HBox box = new HBox();
-      box.getChildren().addAll(this.name, cancel, plus, minus);
+      box.getChildren().addAll(group);
       super.getChildren().add(box);
       if (!this.imageUrl.isBlank()) {
         Image icon = null;
@@ -72,7 +82,7 @@ public class EditableActivityView extends VBox {
         activityService.updateActivity(this.name.getText(), this.imageUrl, this.spots.size());
         super.getChildren().clear();
         HBox box = new HBox();
-        box.getChildren().addAll(this.name, cancel, plus, minus);
+        box.getChildren().addAll(group);
         super.getChildren().add(box);
 
         if (!this.imageUrl.isBlank()) {
@@ -89,7 +99,7 @@ public class EditableActivityView extends VBox {
       }
     });
 
-    this.name.setOnMouseClicked((MouseEvent event) -> {
+    addImage.setOnMouseClicked((MouseEvent event) -> {
       FileChooser fileChooser = new FileChooser();
       File file = fileChooser.showOpenDialog(this.getScene().getWindow());
       if(file != null){
@@ -114,7 +124,7 @@ public class EditableActivityView extends VBox {
             }
           });
           HBox box = new HBox();
-          box.getChildren().addAll(this.name, cancel, plus, minus);
+          box.getChildren().addAll(group);
           super.getChildren().clear();
           super.getChildren().add(box);
           super.getChildren().add(activityImage);
@@ -128,7 +138,7 @@ public class EditableActivityView extends VBox {
 
 
     HBox box = new HBox();
-    box.getChildren().addAll(this.name, cancel, plus, minus);
+    box.getChildren().addAll(group);
     super.getChildren().add(box);
     if (!imageUrl.isBlank()) {
       Image icon = null;
