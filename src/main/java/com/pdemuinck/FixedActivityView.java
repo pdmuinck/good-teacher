@@ -24,7 +24,6 @@ public class FixedActivityView extends VBox {
 
   private ActivityService activityService = new ActivityMockService(new FileDataStore());
   private UserService userService = new UserMockService(new FileDataStore());
-  private boolean full = false;
 
   public FixedActivityView(String name, String imageUrl, int spots) {
     this.name = name;
@@ -55,24 +54,22 @@ public class FixedActivityView extends VBox {
     return gridPane;
   }
 
-  public void setFull(boolean full) {
-    this.full = full;
-  }
-
   private ImageView prepareImageView(Image basic) {
     ImageView imageView1 = new ImageView(basic);
     imageView1.setUserData("icons/empty_box.png");
     imageView1.setOnDragDetected((MouseEvent event) -> {
-      Dragboard db = imageView1.startDragAndDrop(TransferMode.ANY);
-      db.setDragView(imageView1.getImage());
-      ClipboardContent content = new ClipboardContent();
-      content.putString((String) imageView1.getUserData());
-      db.setContent(content);
-      activityService.leaveActivity(this.name, (String) imageView1.getUserData());
-      Main.classroomController.updateActivityChange(
-          String.format("%s left activity %s", imageView1.getUserData(), name));
-      imageView1.setImage(basic);
-      imageView1.setUserData("icons/empty_box.png");
+      if(!imageView1.getUserData().equals("icons/empty_box.png")){
+        Dragboard db = imageView1.startDragAndDrop(TransferMode.ANY);
+        db.setDragView(imageView1.getImage());
+        ClipboardContent content = new ClipboardContent();
+        content.putString((String) imageView1.getUserData());
+        db.setContent(content);
+        activityService.leaveActivity(this.name, (String) imageView1.getUserData());
+        Main.classroomController.updateActivityChange(
+            String.format("%s left activity %s", imageView1.getUserData(), name));
+        imageView1.setImage(basic);
+        imageView1.setUserData("icons/empty_box.png");
+      }
     });
     imageView1.setOnDragOver((DragEvent event) -> {
       List<Activity> activities = activityService.getActivities();

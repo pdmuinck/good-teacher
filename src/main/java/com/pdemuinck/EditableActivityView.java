@@ -6,22 +6,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -29,20 +23,19 @@ import org.kordamp.ikonli.javafx.FontIcon;
 public class EditableActivityView extends VBox {
 
 
-  private Label name;
+  private final String name;
 
-  private List<ImageView> spots;
+  private final List<ImageView> spots;
 
-  private ActivityService activityService;
+  private final ActivityService activityService;
 
   private String imageUrl;
 
   public EditableActivityView(String name, String imageUrl, int spots, ActivityService activityService) {
     this.activityService = activityService;
-    this.name = new Label(name);
+    this.name = name;
     this.imageUrl = imageUrl;
 
-    this.name.setAlignment(Pos.TOP_CENTER);
     Button cancel = new Button("", new FontIcon(Feather.X_CIRCLE));
     cancel.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.DANGER);
     Button plus = new Button("", new FontIcon(Feather.PLUS));
@@ -54,47 +47,24 @@ public class EditableActivityView extends VBox {
       Main.classroomController.removeActivity(this);
     });
     Image image = new Image(getClass().getClassLoader().getResourceAsStream("icons/empty_box.png"));
-    this.spots = IntStream.range(0, spots).boxed().map(x -> prepareImageView(image)).collect(
+    this.spots = IntStream.range(0, spots).boxed().map(x -> addEmptyBox(image)).collect(
         Collectors.toList());
     var group = new InputGroup(addImage, plus, minus, cancel);
     plus.setOnMouseClicked((MouseEvent event) -> {
-      this.spots.add(prepareImageView(image));
-      activityService.updateActivity(this.name.getText(), this.imageUrl, this.spots.size());
+      this.spots.add(addEmptyBox(image));
+      activityService.updateActivity(name, this.imageUrl, this.spots.size());
       super.getChildren().clear();
-      HBox box = new HBox();
-      box.getChildren().addAll(group);
-      super.getChildren().add(box);
-      if (!this.imageUrl.isBlank()) {
-        Image icon = null;
-        try {
-          icon = new Image(new FileInputStream(this.imageUrl), 150, 150, false, false);
-          ImageView activityImage = new ImageView(icon);
-          super.getChildren().add(activityImage);
-        } catch (FileNotFoundException e) {
-          throw new RuntimeException(e);
-        }
-      }
+      super.getChildren().add(group);
+      prepActivityImage().map(i -> super.getChildren().add(i));
       super.getChildren().add(fillSpotPane());
     });
     minus.setOnMouseClicked((MouseEvent event) -> {
-      if (this.spots.size() > 0) {
+      if (!this.spots.isEmpty()) {
         this.spots.removeLast();
-        activityService.updateActivity(this.name.getText(), this.imageUrl, this.spots.size());
+        activityService.updateActivity(name, this.imageUrl, this.spots.size());
         super.getChildren().clear();
-        HBox box = new HBox();
-        box.getChildren().addAll(group);
-        super.getChildren().add(box);
-
-        if (!this.imageUrl.isBlank()) {
-          Image icon = null;
-          try {
-            icon = new Image(new FileInputStream(this.imageUrl), 150, 150, false, false);
-            ImageView activityImage = new ImageView(icon);
-            super.getChildren().add(activityImage);
-          } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-          }
-        }
+        super.getChildren().add(group);
+        prepActivityImage().map(i -> super.getChildren().add(i));
         super.getChildren().add(fillSpotPane());
       }
     });
@@ -123,23 +93,18 @@ public class EditableActivityView extends VBox {
               activityImage.setImage(newIcon);
             }
           });
-          HBox box = new HBox();
-          box.getChildren().addAll(group);
           super.getChildren().clear();
-          super.getChildren().add(box);
+          super.getChildren().add(group);
           super.getChildren().add(activityImage);
           super.getChildren().add(fillSpotPane());
         } catch (FileNotFoundException e) {
           throw new RuntimeException(e);
         }
       }
-
     });
 
 
-    HBox box = new HBox();
-    box.getChildren().addAll(group);
-    super.getChildren().add(box);
+    super.getChildren().add(group);
     if (!imageUrl.isBlank()) {
       Image icon = null;
       try {
@@ -163,6 +128,8 @@ public class EditableActivityView extends VBox {
       } catch (FileNotFoundException e) {
         throw new RuntimeException(e);
       }
+    } else {
+      super.getChildren().add(new Label(name));
     }
     super.getChildren().add(fillSpotPane());
   }
@@ -178,58 +145,26 @@ public class EditableActivityView extends VBox {
     return gridPane;
   }
 
-  private ImageView prepareImageView(Image basic) {
+  private Optional<ImageView> prepActivityImage(){
+    if (!this.imageUrl.isBlank()) {
+      Image icon = null;
+      try {
+        icon = new Image(new FileInputStream(this.imageUrl), 150, 150, false, false);
+        return Optional.of(new ImageView(icon));
+      } catch (FileNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return Optional.empty();
+  }
+
+  private ImageView addEmptyBox(Image basic) {
     ImageView imageView1 = new ImageView(basic);
     imageView1.setUserData("icons/empty_box.png");
-    imageView1.setOnDragDetected((MouseEvent event) -> {
-      Dragboard db = imageView1.startDragAndDrop(TransferMode.ANY);
-      db.setDragView(imageView1.getImage());
-      ClipboardContent content = new ClipboardContent();
-      content.putString((String) imageView1.getUserData());
-      db.setContent(content);
-      activityService.leaveActivity(this.name.getText(), (String) imageView1.getUserData());
-      Main.classroomController.updateActivityChange(
-          String.format("%s left activity %s", imageView1.getUserData(), name));
-      imageView1.setImage(basic);
-      imageView1.setUserData("icons/empty_box.png");
-    });
-    imageView1.setOnDragOver((DragEvent event) -> {
-      if (event.getGestureSource() != imageView1 && event.getDragboard().hasString() &&
-          imageView1.getUserData().equals("icons/empty_box.png")) {
-        event.acceptTransferModes(TransferMode.ANY);
-      }
-      event.consume();
-    });
-    imageView1.setOnDragDropped((DragEvent event) -> {
-      Dragboard db = event.getDragboard();
-      if (db.hasString()) {
-        if (imageView1.getUserData().equals("icons/empty_box.png")) {
-          Image image2 =
-              null;
-          try {
-            image2 = new Image(new FileInputStream(db.getString()), 75, 75, false, false);
-          } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-          }
-          imageView1.setImage(image2);
-          imageView1.setPreserveRatio(true);
-          imageView1.setUserData(db.getString());
-          activityService.joinActivity(this.name.getText(), db.getString());
-          Main.classroomController.updateActivityChange(
-              String.format("%s joined activity %s", this.name.getText(), db.getString()));
-        } else {
-          event.setDropCompleted(false);
-        }
-        event.setDropCompleted(true);
-      } else {
-        event.setDropCompleted(false);
-      }
-      event.consume();
-    });
     return imageView1;
   }
 
-  public Label getName() {
+  public String getName() {
     return name;
   }
 

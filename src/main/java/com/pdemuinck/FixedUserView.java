@@ -19,18 +19,20 @@ public class FixedUserView extends HBox {
 
   private String avatar;
   private String name;
+
+
   private ImageView imageView;
 
   public FixedUserView(String name, String avatar) {
     this.name = name;
     this.avatar = avatar;
-    if(avatar.isBlank()){
+    if (avatar.isBlank()) {
       Label label = new Label(name);
 
       FileChooser fileChooser = new FileChooser();
       label.setOnMouseClicked(e -> {
         File selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
-        if(selectedFile != null){
+        if (selectedFile != null) {
           this.avatar = selectedFile.getAbsolutePath();
           try {
             FileInputStream fs = new FileInputStream(selectedFile.getAbsolutePath());
@@ -44,7 +46,7 @@ public class FixedUserView extends HBox {
               ClipboardContent content = new ClipboardContent();
               content.putString(String.join(",", name, avatar));
               db.setContent(content);
-              imageView.setVisible(false);
+              this.setVisible(false);
             });
             imageView.setOnMouseDragged((MouseEvent event) -> {
               event.setDragDetect(true);
@@ -80,7 +82,7 @@ public class FixedUserView extends HBox {
           ClipboardContent content = new ClipboardContent();
           content.putString(String.join(",", name, avatar));
           db.setContent(content);
-          imageView.setVisible(false);
+          this.setVisible(false);
         });
         imageView.setOnMouseDragged((MouseEvent event) -> {
           event.setDragDetect(true);
@@ -101,7 +103,7 @@ public class FixedUserView extends HBox {
     return name;
   }
 
-  public void reset(String avatar){
+  public void reset(String avatar) {
     super.getChildren().remove(this.imageView);
     Image image = null;
     try {
@@ -112,5 +114,9 @@ public class FixedUserView extends HBox {
     imageView.setImage(image);
     imageView.setVisible(true);
     super.getChildren().add(imageView);
+  }
+
+  public ImageView getImageView() {
+    return imageView;
   }
 }
