@@ -60,7 +60,7 @@ public class EditableActivityView extends VBox {
     });
     minus.setOnMouseClicked((MouseEvent event) -> {
       if (!this.spots.isEmpty()) {
-        this.spots.removeLast();
+        this.spots.remove(this.spots.get(this.spots.size() - 1));
         activityService.updateActivity(name, this.imageUrl, this.spots.size());
         super.getChildren().clear();
         super.getChildren().add(group);

@@ -9,11 +9,12 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <javafx.version>21</javafx.version>
+        <javafx.version>17</javafx.version>
         <javafx.maven.plugin.version>0.0.8</javafx.maven.plugin.version>
+        <gluonfx.target>host</gluonfx.target>
     </properties>
 
     <dependencies>
@@ -79,7 +80,36 @@
                     <mainClass>com.pdemuinck.Main</mainClass>
                 </configuration>
             </plugin>
-        </plugins>
-    </build>
+            <plugin>
+                <groupId>com.gluonhq</groupId>
+                <artifactId>gluonfx-maven-plugin</artifactId>
+                <version>1.0.22</version>
 
+                <configuration>
+                    <graalvmHome>/home/pieterjand/projects/graalvm-svm-java17-linux-gluon-22.1.0.1-Final</graalvmHome>
+                    <target>${gluonfx.target}</target>
+                    <mainClass>com.pdemuinck.Main</mainClass>
+                    <releaseConfiguration>
+                        <versionCode>1</versionCode>
+                    </releaseConfiguration>
+                </configuration>
+
+            </plugin>
+        </plugins>
+
+    </build>
+    <profiles>
+        <profile>
+            <id>ios</id>
+            <properties>
+                <gluonfx.target>ios</gluonfx.target>
+            </properties>
+        </profile>
+        <profile>
+            <id>android</id>
+            <properties>
+                <gluonfx.target>android</gluonfx.target>
+            </properties>
+        </profile>
+    </profiles>
 </project>
