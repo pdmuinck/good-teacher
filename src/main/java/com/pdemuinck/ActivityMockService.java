@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ActivityMockService implements ActivityService {
@@ -25,8 +26,8 @@ public class ActivityMockService implements ActivityService {
     activities.forEach(a -> {
       if(a.getName().equals(activityName)){
         a.setBlackList(blackLists);
+        a.join(LocalDateTime.now(), userName);
       }
-      a.join(LocalDateTime.now(), userName);
     });
   }
 
@@ -47,7 +48,7 @@ public class ActivityMockService implements ActivityService {
     activities.forEach(activity -> activity.pause(LocalDateTime.now()));
     String data =
         activities.stream().map(Activity::getDurationByKid).collect(Collectors.joining("\r\n"));
-    dataStore.saveActivityTime(data + "\r\n");
+    dataStore.saveActivityTime(data);
   }
 
   @Override
@@ -91,17 +92,17 @@ public class ActivityMockService implements ActivityService {
   @Override
   public Activity addActivity(String name) {
     Activity activity = new Activity(name, "", 4);
-    addActivity(activity);
-    return activity;
+    return addActivity(activity);
   }
 
-  private void addActivity(Activity activity) {
+  private Activity addActivity(Activity activity) {
     if (this.activities.stream().noneMatch(a -> a.getName().equals(activity.getName()))) {
       this.activities.add(activity);
       dataStore.writeActivity(
           String.join(",", activity.getName(), activity.getImageUrl(), "4", "true") + "\r\n");
+      return activity;
     } else {
-      showActivity(activity.getName());
+      return showActivity(activity.getName()).orElse(activity);
     }
   }
 
@@ -112,15 +113,16 @@ public class ActivityMockService implements ActivityService {
     return activity;
   }
 
-  private void showActivity(String name) {
+  private Optional<Activity> showActivity(String name) {
     String data = activities.stream().distinct().map(a -> {
-      if (name.equals(a.getName())) {
+      if (a.getName().equals(name)) {
         a.setShow(true);
       }
       return String.join(",", a.getName(), a.getImageUrl(), String.valueOf(a.getMaxSpots()),
           String.valueOf(a.isShow()));
     }).collect(Collectors.joining("\r\n"));
-    dataStore.overWriteActivities(data + "\r\n");
+    dataStore.overWriteActivities(data);
+    return activities.stream().filter(a -> a.getName().equals(name)).findFirst();
   }
 
   @Override
@@ -165,6 +167,6 @@ public class ActivityMockService implements ActivityService {
 
   private TimeReportRow parse(String data) {
     String[] split = data.split(",", -1);
-    return new TimeReportRow(split[0], split[1], LocalDate.parse(split[2]), Long.valueOf(split[3]));
+    return new TimeReportRow(split[0], split[1], split[2], LocalDate.parse(split[3]), Long.valueOf(split[4]));
   }
 }

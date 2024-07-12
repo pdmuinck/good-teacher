@@ -102,8 +102,6 @@ public class EditableActivityView extends VBox {
         }
       }
     });
-
-
     super.getChildren().add(group);
     if (!imageUrl.isBlank()) {
       Image icon = null;

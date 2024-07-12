@@ -22,10 +22,11 @@ public class FixedActivityView extends VBox {
 
   List<ImageView> spots;
 
-  private ActivityService activityService = new ActivityMockService(new FileDataStore());
+  private ActivityService activityService;
   private UserService userService = new UserMockService(new FileDataStore());
 
-  public FixedActivityView(String name, String imageUrl, int spots) {
+  public FixedActivityView(String name, String imageUrl, int spots, ActivityService activityService) {
+    this.activityService = activityService;
     this.name = name;
     Image image = new Image(getClass().getClassLoader().getResourceAsStream("icons/empty_box.png"));
     this.spots = IntStream.range(0, spots).boxed().map(x -> prepareImageView(image)).collect(

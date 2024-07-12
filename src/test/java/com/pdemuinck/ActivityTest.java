@@ -131,6 +131,18 @@ class ActivityTest {
   }
 
   @Test
+  public void stops_tracking_when_kid_leaves(){
+    Activity activity = new Activity("drawing", 2);
+    activity.join(LocalDateTime.of(2024, 6, 12, 0, 0), "Charlie");
+    activity.start(LocalDateTime.of(2024, 6, 12, 0, 5));
+    activity.pause(LocalDateTime.of(2024, 6, 12, 0, 10));
+    activity.leave(LocalDateTime.of(2024, 6, 12, 0, 15), "Charlie");
+    activity.start(LocalDateTime.of(2024, 6, 12, 0, 20));
+    activity.pause(LocalDateTime.of(2024, 6, 12, 0, 30));
+    assertThat(activity.getDurationForKid("Charlie")).isEqualTo(5 * 1000 * 60);
+  }
+
+  @Test
   public void tracks_when_kid_rejoins_when_activity_is_busy(){
     Activity activity = new Activity("drawing", 2);
     activity.join(LocalDateTime.of(2024, 6, 12, 0, 0), "Charlie");

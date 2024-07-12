@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.List;
+import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -63,7 +64,25 @@ public class ActivityServiceIntegrationTest {
     Thread.sleep(1000);
     activityService.pauseAllActivities();
     List<TimeReportRow> timeReportForCharlie = activityService.fetchTimeReport("charlie");
-    assertThat(timeReportForCharlie.stream().map(TimeReportRow::getTime)
-        .reduce(0L, Long::sum)).isGreaterThan(2000L);
+    assertThat(timeReportForCharlie.get(timeReportForCharlie.size() - 1).getTime()).isCloseTo(2000L,
+        Offset.offset(3L));
+  }
+
+  @Test
+  public void stops_measurement_when_user_leaves() throws InterruptedException {
+    DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
+    ActivityService activityService = new ActivityMockService(dataStore);
+    activityService.addActivity("painting", "imageUrl", 10);
+    activityService.joinActivity("painting", "charlie");
+    activityService.startAllActivities();
+    Thread.sleep(1000);
+    activityService.pauseAllActivities();
+    activityService.leaveActivity("painting", "charlie");
+    activityService.startAllActivities();
+    Thread.sleep(1000);
+    activityService.pauseAllActivities();
+    List<TimeReportRow> timeReportForCharlie = activityService.fetchTimeReport("charlie");
+    assertThat(timeReportForCharlie.get(timeReportForCharlie.size() - 1).getTime()).isCloseTo(1000L,
+        Offset.offset(3L));
   }
 }

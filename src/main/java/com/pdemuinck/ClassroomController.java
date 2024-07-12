@@ -1,7 +1,8 @@
 package com.pdemuinck;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import atlantafx.base.controls.ToggleSwitch;
+import atlantafx.base.layout.InputGroup;
+import atlantafx.base.theme.Styles;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.image.Image;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
@@ -48,10 +48,16 @@ public class ClassroomController implements Initializable {
   private TextField newUser;
 
   @FXML
-  private ToggleButton presentMode;
+  private ToggleSwitch presentMode;
 
   @FXML
-  private Button saveBoardButton;
+  private Button playActivities;
+
+  @FXML
+  private Button pauseActivities;
+
+  @FXML
+  private InputGroup activityButtons;
 
   private ActivityService activityService = new ActivityMockService(new FileDataStore());
   private UserService userService = new UserMockService(new FileDataStore());
@@ -61,6 +67,12 @@ public class ClassroomController implements Initializable {
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
+    playActivities.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.SUCCESS);
+    pauseActivities.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.DANGER);
+    playActivities.setVisible(false);
+    pauseActivities.setVisible(false);
+    activityButtons.getChildren().clear();
+    activityButtons.getChildren().add(presentMode);
     List<Activity> activities = activityService.fetchActivities();
     this.activityViews = activities.stream().filter(Activity::isShow).map(
         a -> new EditableActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(),
@@ -200,10 +212,10 @@ public class ClassroomController implements Initializable {
   }
 
   @FXML
-  public void onPresentMode(ActionEvent event) {
+  public void onPresentMode(MouseEvent event) {
     if (this.presentMode.isSelected()) {
-      List<FixedActivityView> fixedActivityViewStream = activityViews.stream()
-          .map(a -> new FixedActivityView(a.getName(), a.getImageUrl(), a.getSpots().size()))
+      List<FixedActivityView> fixedActivityViewStream = activityService.fetchActivities().stream()
+          .map(a -> new FixedActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(), activityService))
           .collect(
               Collectors.toList());
       fillWithFixedActivities(fixedActivityViewStream);
@@ -215,6 +227,10 @@ public class ClassroomController implements Initializable {
                   Collectors.toList());
       kids.getChildren().clear();
       kids.getChildren().addAll(fixedUserViews);
+      activityButtons.getChildren().clear();
+      playActivities.setVisible(true);
+      pauseActivities.setVisible(true);
+      activityButtons.getChildren().addAll(playActivities, pauseActivities, presentMode);
     } else {
       fillWithEditableActivities(this.activityViews);
       newActivity.setVisible(true);
@@ -224,6 +240,13 @@ public class ClassroomController implements Initializable {
               Collectors.toList());
       kids.getChildren().clear();
       kids.getChildren().addAll(editableUserViews);
+      activityButtons.getChildren().clear();
+      activityButtons.getChildren().addAll(presentMode);
     }
+  }
+
+  public void pauseAllActivities(MouseEvent actionEvent) {
+    activityService.pauseAllActivities();
+    updateActivityChange("All activities got paused");
   }
 }

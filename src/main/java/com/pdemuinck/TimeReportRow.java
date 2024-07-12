@@ -4,11 +4,13 @@ import java.time.LocalDate;
 
 public class TimeReportRow {
   private final String userName;
+  private final String session;
   private final String activityName;
   private final LocalDate activityDate;
   private final long time;
 
-  public TimeReportRow(String userName, String activityName, LocalDate activityDate, long time) {
+  public TimeReportRow(String userName, String session, String activityName, LocalDate activityDate, long time) {
+    this.session = session;
     this.userName = userName;
     this.activityName = activityName;
     this.activityDate = activityDate;

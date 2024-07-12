@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import atlantafx.base.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.*?>
+
+<?import atlantafx.base.controls.ToggleSwitch?>
 <VBox onDragExited="#reset" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pdemuinck.ClassroomController">
     <children>
         <BorderPane prefHeight="200.0" prefWidth="200.0">
@@ -19,13 +18,21 @@
             </left>
             <center>
                 <VBox>
-                    <HBox fx:id="newActivityRequest">
-                  <children>
-                     <TextField fx:id="newActivity" onKeyPressed="#addActivity" />
-                  </children></HBox>
-                    <GridPane fx:id="activitiesPane" onDragExited="#reset" BorderPane.alignment="CENTER">
-                    </GridPane>
-                    <ToggleButton fx:id="presentMode" onAction="#onPresentMode" text="presenteer modus" />
+                    <InputGroup fx:id="activityButtons">
+                        <Button fx:id="playActivities" onMouseClicked="#startAllActivities">
+                            <graphic>
+                                <FontIcon iconLiteral="fth-play" />
+                            </graphic>
+                        </Button>
+                        <Button fx:id="pauseActivities" onMouseClicked="#pauseAllActivities" >
+                            <graphic>
+                                <FontIcon iconColor="orange" iconLiteral="fth-pause" />
+                            </graphic>
+                        </Button>
+                        <ToggleSwitch fx:id="presentMode" onMouseClicked="#onPresentMode" text="presenteer" />
+                    </InputGroup>
+                    <TextField fx:id="newActivity" onKeyPressed="#addActivity" />
+                    <GridPane fx:id="activitiesPane" onDragExited="#reset" BorderPane.alignment="CENTER" />
                 </VBox>
             </center>
             <right>

@@ -85,6 +85,7 @@ public class Activity {
   public void leave(LocalDateTime eventTs, String name) {
     availableSpots++;
     LocalDateTime joinTs = joinTimeByKid.get(name);
+    joinTimeByKid.remove(name);
     if (lastStartTs != null) {
       if (endTs == null || !endTs.isBefore(eventTs)) {
         if (joinTs.isBefore(eventTs) && joinTs.isAfter(lastStartTs)) {
@@ -112,7 +113,7 @@ public class Activity {
 
   public String getDurationByKid() {
     return this.durationByKid.entrySet().stream()
-        .map(e -> String.join(",", e.getKey(), this.name,
+        .map(e -> String.join(",", e.getKey(), Main.session, this.name,
             LocalDate.now().format(DateTimeFormatter.ISO_DATE), String.valueOf(e.getValue())))
         .collect(
             Collectors.joining("\r\n"));
