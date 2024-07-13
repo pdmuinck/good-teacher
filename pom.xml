@@ -92,6 +92,11 @@
                     <releaseConfiguration>
                         <versionCode>1</versionCode>
                     </releaseConfiguration>
+                    <resourcesList>
+                        <pattern>.*\\.txt</pattern>
+                        <pattern>.*\\.ini</pattern>
+                        <pattern>.*\\.png</pattern>
+                    </resourcesList>
                 </configuration>
 
             </plugin>
