@@ -18,16 +18,17 @@ public class EditableUserView extends HBox {
   private String name;
   private ImageView imageView;
 
-  public EditableUserView(String name, String avatar){
+  public EditableUserView(String name, String avatar) {
     this.name = name;
     this.avatar = avatar;
-    if(avatar.isBlank()){
+    this.imageView = new ImageView();
+    if (avatar.isBlank()) {
       Label label = new Label(name);
 
       FileChooser fileChooser = new FileChooser();
       label.setOnMouseClicked(e -> {
         File selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
-        if(selectedFile != null){
+        if (selectedFile != null) {
           this.avatar = selectedFile.getAbsolutePath();
           try {
             FileInputStream fs = new FileInputStream(selectedFile.getAbsolutePath());
@@ -64,7 +65,7 @@ public class EditableUserView extends HBox {
     this.imageView.setOnMouseClicked((MouseEvent event) -> {
       FileChooser fileChooser = new FileChooser();
       File selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
-      if(selectedFile != null){
+      if (selectedFile != null) {
         this.avatar = selectedFile.getAbsolutePath();
         FileInputStream fs = null;
         try {

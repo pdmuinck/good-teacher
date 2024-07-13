@@ -193,17 +193,14 @@ public class ClassroomController implements Initializable {
   public void addUser(KeyEvent event) {
     if (event.getCode() == KeyCode.ENTER && !newUser.getText().isBlank()) {
       String text = newUser.getText();
-      Optional<User> user = userService.fetchUserByName(text);
-      FixedUserView
-          fixedUserView = user.map(u -> new FixedUserView(u.getName(), u.getAvatar()))
-          .orElse(new FixedUserView(text, ""));
       newUser.setText("");
+      Optional<User> user = userService.fetchUserByName(text);
       if (user.isEmpty()) {
-        fixedUserViews.add(fixedUserView);
+        editableUserViews.add(new EditableUserView(text, ""));
         userService.addUser(text, "");
       }
       kids.getChildren().clear();
-      kids.getChildren().addAll(fixedUserViews);
+      kids.getChildren().addAll(editableUserViews);
     }
   }
 
