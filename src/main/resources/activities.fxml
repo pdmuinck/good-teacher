@@ -6,40 +6,33 @@
 <?import org.kordamp.ikonli.javafx.*?>
 
 <?import atlantafx.base.controls.ToggleSwitch?>
-<VBox onDragExited="#reset" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.pdemuinck.ClassroomController">
+<?import atlantafx.base.controls.ModalPane?>
+<VBox onDragExited="#reset" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.pdemuinck.ClassroomController">
     <children>
-        <BorderPane prefHeight="200.0" prefWidth="200.0">
-            <left>
-                <VBox>
-                    <TextField fx:id="newUser" onKeyPressed="#addUser" />
-                    <VBox fx:id="kids" prefHeight="800.0" prefWidth="180.0" BorderPane.alignment="CENTER">
-                    </VBox>
-                </VBox>
-            </left>
-            <center>
-                <VBox>
-                    <InputGroup fx:id="activityButtons">
-                        <Button fx:id="playActivities" onMouseClicked="#startAllActivities">
-                            <graphic>
-                                <FontIcon iconLiteral="fth-play" />
-                            </graphic>
-                        </Button>
-                        <Button fx:id="pauseActivities" onMouseClicked="#pauseAllActivities" >
-                            <graphic>
-                                <FontIcon iconColor="orange" iconLiteral="fth-pause" />
-                            </graphic>
-                        </Button>
-                        <ToggleSwitch fx:id="presentMode" onMouseClicked="#onPresentMode" text="presenteer" />
-                    </InputGroup>
-                    <TextField fx:id="newActivity" onKeyPressed="#addActivity" />
-                    <GridPane fx:id="activitiesPane" onDragExited="#reset" BorderPane.alignment="CENTER" />
-                </VBox>
-            </center>
-            <right>
-                <Label fx:id="changelog" />
-            </right>
-            <bottom>
-            </bottom>
-        </BorderPane>
+        <SplitPane prefHeight="200.0" prefWidth="200.0">
+            <VBox>
+                <TextField fx:id="newUser" onKeyPressed="#addUser"/>
+                <Accordion fx:id="kids" prefHeight="800.0" prefWidth="180.0" BorderPane.alignment="CENTER">
+                </Accordion>
+            </VBox>
+            <VBox>
+                <InputGroup fx:id="activityButtons">
+                    <Button fx:id="playActivities" onMouseClicked="#startAllActivities">
+                        <graphic>
+                            <FontIcon iconLiteral="fth-play"/>
+                        </graphic>
+                    </Button>
+                    <Button fx:id="pauseActivities" onMouseClicked="#pauseAllActivities">
+                        <graphic>
+                            <FontIcon iconColor="orange" iconLiteral="fth-pause"/>
+                        </graphic>
+                    </Button>
+                    <ToggleSwitch fx:id="presentMode" onMouseClicked="#onPresentMode" text="presenteer"/>
+                </InputGroup>
+                <TextField fx:id="newActivity" onKeyPressed="#addActivity"/>
+                <GridPane fx:id="activitiesPane" onDragExited="#reset" BorderPane.alignment="CENTER"/>
+            </VBox>
+        </SplitPane>
     </children>
 </VBox>

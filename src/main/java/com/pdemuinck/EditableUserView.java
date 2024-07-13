@@ -1,9 +1,11 @@
 package com.pdemuinck;
 
+import atlantafx.base.layout.InputGroup;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import javafx.scene.control.Label;
+import javafx.scene.control.TitledPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -12,13 +14,14 @@ import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
-public class EditableUserView extends HBox {
+public class EditableUserView extends TitledPane {
 
   private String avatar;
   private String name;
   private ImageView imageView;
 
   public EditableUserView(String name, String avatar) {
+    super(name, new InputGroup(new UserDetailView(name, avatar)));
     this.name = name;
     this.avatar = avatar;
     this.imageView = new ImageView();

@@ -9,14 +9,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ToggleButton;
+import javafx.scene.control.TitledPane;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
@@ -37,9 +37,6 @@ public class ClassroomController implements Initializable {
 
   @FXML
   private Button start;
-
-  @FXML
-  private Label changelog;
 
   @FXML
   private TextField newActivity;
@@ -84,12 +81,13 @@ public class ClassroomController implements Initializable {
         userService.fetchUsers().stream().map(k -> new EditableUserView(k.getName(), k.getAvatar()))
             .collect(
                 Collectors.toList());
+    kids.getChildren().add(new Accordion(editableUserViews.toArray(new TitledPane[editableUserViews.size()])));
     kids.getChildren().addAll(editableUserViews);
-    kids.getParent().getParent().setOnDragOver((DragEvent event) -> {
+    kids.setOnDragOver((DragEvent event) -> {
       event.acceptTransferModes(TransferMode.ANY);
       event.consume();
     });
-    kids.getParent().getParent().setOnDragDropped((DragEvent event) -> {
+    kids.getParent().setOnDragDropped((DragEvent event) -> {
       Dragboard db = event.getDragboard();
       if (db.hasString()) {
         String user = db.getString();
@@ -159,7 +157,7 @@ public class ClassroomController implements Initializable {
   }
 
   public void updateActivityChange(String change) {
-    this.changelog.setText(String.join("\n", this.changelog.getText(), change));
+//    this.changelog.setText(String.join("\n", this.changelog.getText(), change));
   }
 
   @FXML
@@ -204,6 +202,10 @@ public class ClassroomController implements Initializable {
     }
   }
 
+  public void saveUser(String name, String avatar){
+    userService.addUser(name, avatar);
+  }
+
   public void saveUsers() {
     this.editableUserViews.forEach(uv -> userService.addUser(uv.getName(), uv.getAvatar()));
   }
@@ -212,7 +214,8 @@ public class ClassroomController implements Initializable {
   public void onPresentMode(MouseEvent event) {
     if (this.presentMode.isSelected()) {
       List<FixedActivityView> fixedActivityViewStream = activityService.fetchActivities().stream()
-          .map(a -> new FixedActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(), activityService))
+          .map(a -> new FixedActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(),
+              activityService))
           .collect(
               Collectors.toList());
       fillWithFixedActivities(fixedActivityViewStream);
@@ -245,5 +248,18 @@ public class ClassroomController implements Initializable {
   public void pauseAllActivities(MouseEvent actionEvent) {
     activityService.pauseAllActivities();
     updateActivityChange("All activities got paused");
+  }
+
+  private static class Dialog extends VBox {
+
+    public Dialog(int width, int height) {
+      super();
+
+      setSpacing(10);
+      setAlignment(Pos.CENTER);
+      setMinSize(width, height);
+      setMaxSize(width, height);
+      setStyle("-fx-background-color: -color-bg-default;");
+    }
   }
 }
