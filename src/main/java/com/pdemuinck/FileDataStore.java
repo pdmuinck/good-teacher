@@ -137,4 +137,9 @@ public class FileDataStore implements DataStore {
       throw new RuntimeException(e);
     }
   }
+
+  @Override
+  public void overwriteBlackList(String data) {
+    write(data, "blacklist.csv", StandardOpenOption.TRUNCATE_EXISTING);
+  }
 }

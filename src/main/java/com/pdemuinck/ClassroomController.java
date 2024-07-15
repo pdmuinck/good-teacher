@@ -17,6 +17,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
@@ -34,6 +35,9 @@ public class ClassroomController implements Initializable {
 
   @FXML
   private GridPane activitiesPane;
+
+  @FXML
+  private ScrollPane activities, users;
 
   @FXML
   private VBox kids;
@@ -67,6 +71,15 @@ public class ClassroomController implements Initializable {
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
+    final double SPEED = 0.01;
+    activities.getContent().setOnScroll(scrollEvent -> {
+      double deltaY = scrollEvent.getDeltaY() * SPEED;
+      activities.setVvalue(activities.getVvalue() - deltaY);
+    });
+    users.getContent().setOnScroll(scrollEvent -> {
+      double deltaY = scrollEvent.getDeltaY() * SPEED;
+      users.setVvalue(users.getVvalue() - deltaY);
+    });
     playActivities.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.SUCCESS);
     pauseActivities.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.DANGER);
     playActivities.setVisible(false);
@@ -81,10 +94,12 @@ public class ClassroomController implements Initializable {
     activitiesPane.setHgap(10);
     fillWithEditableActivities(this.activityViews);
     editableUserViews =
-        userService.fetchUsers().stream().map(k -> new EditableUserView(k.getName(), k.getAvatar(), activityService.timeByActivity(k.getName())))
+        userService.fetchUsers().stream().map(k -> new EditableUserView(k.getName(), k.getAvatar(),
+                activityService.timeByActivity(k.getName())))
             .collect(
                 Collectors.toList());
-    kids.getChildren().add(new Accordion(editableUserViews.toArray(new TitledPane[editableUserViews.size()])));
+    kids.getChildren()
+        .add(new Accordion(editableUserViews.toArray(new TitledPane[editableUserViews.size()])));
     kids.getChildren().addAll(editableUserViews);
     kids.setOnDragOver((DragEvent event) -> {
       event.acceptTransferModes(TransferMode.ANY);
@@ -205,7 +220,7 @@ public class ClassroomController implements Initializable {
     }
   }
 
-  public void saveUser(String name, String avatar){
+  public void saveUser(String name, String avatar) {
     userService.addUser(name, avatar);
   }
 
@@ -213,11 +228,17 @@ public class ClassroomController implements Initializable {
     this.editableUserViews.forEach(uv -> userService.addUser(uv.getName(), uv.getAvatar()));
   }
 
+  public List<String> fetchUsers(String search) {
+    return this.editableUserViews.stream().map(EditableUserView::getName)
+        .filter(u -> u.contains(search)).collect(Collectors.toList());
+  }
+
   @FXML
   public void onPresentMode(MouseEvent event) {
     if (this.presentMode.isSelected()) {
       List<FixedActivityView> fixedActivityViewStream = activityService.fetchActivities().stream()
-          .filter(Activity::isShow).map(a -> new FixedActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(),
+          .filter(Activity::isShow)
+          .map(a -> new FixedActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(),
               activityService))
           .collect(
               Collectors.toList());
@@ -239,10 +260,12 @@ public class ClassroomController implements Initializable {
       newActivity.setVisible(true);
       newUser.setVisible(true);
       editableUserViews = userService.fetchUsers().stream()
-          .map(k -> new EditableUserView(k.getName(), k.getAvatar(), activityService.timeByActivity(k.getName()))).collect(
+          .map(k -> new EditableUserView(k.getName(), k.getAvatar(),
+              activityService.timeByActivity(k.getName()))).collect(
               Collectors.toList());
       kids.getChildren().clear();
-      kids.getChildren().add(new Accordion(editableUserViews.toArray(new TitledPane[editableUserViews.size()])));
+      kids.getChildren()
+          .add(new Accordion(editableUserViews.toArray(new TitledPane[editableUserViews.size()])));
       kids.getChildren().addAll(editableUserViews);
       activityButtons.getChildren().clear();
       activityButtons.getChildren().addAll(presentMode);

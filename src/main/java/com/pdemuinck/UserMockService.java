@@ -16,8 +16,14 @@ public class UserMockService implements UserService {
 
   @Override
   public List<User> fetchUsers() {
-    this.users = dataStore.fetchUsers().stream().filter(x -> x.split(",").length > 1)
-        .map(x -> new User(x.split(",")[0], x.split(",")[1])).collect(
+    this.users = dataStore.fetchUsers().stream()
+        .map(x -> {
+          if (x.split(",").length == 1) {
+            return new User(x.split(",")[0], "");
+          } else {
+            return new User(x.split(",")[0], x.split(",")[1]);
+          }
+        }).collect(
             Collectors.toList());
     return this.users;
   }
@@ -40,12 +46,12 @@ public class UserMockService implements UserService {
         }
         return String.join(",", a.getName(), a.getAvatar());
       }).collect(Collectors.joining("\r\n"));
-      dataStore.overWriteUsers(data);
+      dataStore.overWriteUsers(data + "\r\n");
     }
   }
 
   @Override
-  public Optional<User> fetchUserByName(String name){
+  public Optional<User> fetchUserByName(String name) {
     return this.users.stream().filter(u -> u.getName().equals(name)).findFirst();
   }
 }

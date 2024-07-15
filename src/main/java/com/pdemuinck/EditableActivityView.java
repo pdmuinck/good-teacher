@@ -65,6 +65,7 @@ public class EditableActivityView extends VBox {
       super.getChildren().add(group);
       prepActivityImage().map(i -> super.getChildren().add(i));
       super.getChildren().add(fillSpotPane());
+      super.getChildren().add(blackList());
     });
     minus.setOnMouseClicked((MouseEvent event) -> {
       if (!this.spots.isEmpty()) {
@@ -74,6 +75,7 @@ public class EditableActivityView extends VBox {
         super.getChildren().add(group);
         prepActivityImage().map(i -> super.getChildren().add(i));
         super.getChildren().add(fillSpotPane());
+        super.getChildren().add(blackList());
       }
     });
 
@@ -105,6 +107,7 @@ public class EditableActivityView extends VBox {
           super.getChildren().add(group);
           super.getChildren().add(activityImage);
           super.getChildren().add(fillSpotPane());
+          super.getChildren().add(blackList());
         } catch (FileNotFoundException e) {
           throw new RuntimeException(e);
         }
@@ -138,46 +141,87 @@ public class EditableActivityView extends VBox {
       super.getChildren().add(new Label(name));
     }
     super.getChildren().add(fillSpotPane());
+    super.getChildren().add(blackList());
+  }
 
-    var card2 = new Card();
-    card2.getStyleClass().add(Styles.ELEVATED_1);
-    card2.setMinWidth(300);
-    card2.setMaxWidth(300);
+  private Card blackList(){
+    var card = new Card();
+    card.getStyleClass().add(Styles.ELEVATED_1);
+    card.setMinWidth(300);
+    card.setMaxWidth(300);
 
     var header2 = new Tile(
         "Black list",
         "Weiger deelnemers tot deelname aan deze activiteit"
     );
-    card2.setHeader(header2);
+    card.setHeader(header2);
 
     var tf2 = new CustomTextField();
     tf2.setPromptText("Zoek persoon");
     tf2.setLeft(new FontIcon(Feather.SEARCH));
-    card2.setSubHeader(tf2);
+    tf2.setOnKeyReleased(e -> {
+      List<String> strings = Main.classroomController.fetchUsers(tf2.getText());
+      List<String> blackList = activityService.fetchBlackList(this.getName());
+      var body2 = new VBox(10);
+      card.setBody(body2);
+      strings.stream().forEach(u -> {
+        var cb = new CheckBox();
+        if(blackList.contains(u)){
+          cb.setSelected(true);
+        }
+        cb.setOnMouseClicked(r -> {
+          if(cb.isSelected()){
+            this.activityService.addToBlackList(this.getName(), u);
+          } else {
+            this.activityService.removeFromBlackList(this.getName(), u);
+          }
+        });
+        var lbl = new Label(u);
+        var circle = new Circle(
+            8, Color.web("red"));
+        HBox hBox = new HBox(10, circle, cb, lbl);
+        hBox.setAlignment(Pos.CENTER_LEFT);
+        body2.getChildren().add(hBox);
+      });
+    });
+
+    card.setSubHeader(tf2);
 
     var body2 = new VBox(10);
-    card2.setBody(body2);
-    for (int i = 0; i < 5; i++) {
+    card.setBody(body2);
+    List<String> strings = activityService.fetchBlackList(this.getName());
+    strings.stream().forEach(u -> {
       var cb = new CheckBox();
-      var lbl = new Label("name");
+      cb.setSelected(true);
+      cb.setOnMouseClicked(r -> {
+        if(cb.isSelected()){
+          this.activityService.addToBlackList(this.getName(), u);
+        } else {
+          this.activityService.removeFromBlackList(this.getName(), u);
+        }
+      });
+      var lbl = new Label(u);
       var circle = new Circle(
-          8, Color.web("red")
-      );
-
-      var row = new HBox(10, circle, cb, lbl);
-      row.setAlignment(Pos.CENTER_LEFT);
-      body2.getChildren().add(row);
-    }
-
-    this.getChildren().add(card2);
+          8, Color.web("red"));
+      HBox hBox = new HBox(10, circle, cb, lbl);
+      hBox.setAlignment(Pos.CENTER_LEFT);
+      body2.getChildren().add(hBox);
+    });
+    return card;
   }
 
   private GridPane fillSpotPane() {
     GridPane gridPane = new GridPane();
-    for (int i = 0; i < spots.size(); i += 2) {
-      gridPane.add(this.spots.get(i), 0, i / 2, 1, 1);
+    for (int i = 0; i < spots.size(); i += 4) {
+      gridPane.add(this.spots.get(i), 0, i, 1, 1);
       if (i + 1 != spots.size()) {
-        gridPane.add(this.spots.get(i + 1), 1, i / 2, 1, 1);
+        gridPane.add(this.spots.get(i + 1), 1, i, 1, 1);
+      }
+      if (i + 2 < spots.size()) {
+        gridPane.add(this.spots.get(i + 2), 2, i, 1, 1);
+      }
+      if (i + 3 < spots.size()) {
+        gridPane.add(this.spots.get(i + 3), 3, i, 1, 1);
       }
     }
     return gridPane;

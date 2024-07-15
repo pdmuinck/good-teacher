@@ -24,6 +24,12 @@ public class ActivityMockService implements ActivityService {
   }
 
   @Override
+  public List<String> fetchBlackList(String activity) {
+    return  dataStore.fetchBlackLists().stream().filter(s -> s.startsWith(activity))
+        .map(s -> s.split(",")[1]).toList();
+  }
+
+  @Override
   public void joinActivity(String activityName, String userName) {
     List<String>
         blackLists = dataStore.fetchBlackLists().stream().filter(s -> s.startsWith(activityName))
@@ -59,6 +65,14 @@ public class ActivityMockService implements ActivityService {
   @Override
   public List<Activity> getActivities() {
     return this.activities;
+  }
+
+  @Override
+  public void removeFromBlackList(String activity, String u) {
+    String data =
+        fetchBlackList(activity).stream().filter(a -> !a.contains(u)).map(s -> String.join(",", activity, s))
+            .collect(Collectors.joining("\r\n"));
+    dataStore.overwriteBlackList(data);
   }
 
 

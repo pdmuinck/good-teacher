@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface ActivityService {
+
+  List<String> fetchBlackList(String activity);
   void joinActivity(String activity, String userName);
   void leaveActivity(String activity, String userName);
 
@@ -26,4 +28,6 @@ public interface ActivityService {
   void addToBlackList(String activity, String user);
 
   List<Activity> getActivities();
+
+  void removeFromBlackList(String activity, String u);
 }

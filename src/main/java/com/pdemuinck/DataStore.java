@@ -21,4 +21,6 @@ public interface DataStore {
   void saveBlacklist(String data);
 
   List<String> fetchBlackLists();
+
+  void overwriteBlackList(String data);
 }
