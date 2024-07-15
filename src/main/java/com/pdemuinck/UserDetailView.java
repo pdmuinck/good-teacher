@@ -19,7 +19,6 @@ import javafx.stage.FileChooser;
 
 public class UserDetailView extends Card {
 
-
   public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity) {
     super();
     this.getStyleClass().add(Styles.ELEVATED_1);
@@ -52,6 +51,33 @@ public class UserDetailView extends Card {
       }
     }
     var header1 = new Tile(name, "", avatarView);
+
+    header1.setOnMouseClicked(e -> {
+      File selectedFile = new FileChooser().showOpenDialog(this.getScene().getWindow());
+      if (selectedFile != null) {
+        try {
+          FileInputStream fs = new FileInputStream(selectedFile.getAbsolutePath());
+          Image image = new Image(fs, 75, 75, false, false);
+          ImageView view = new ImageView(image);
+          view.setOnMouseClicked(x -> {
+            File file = new FileChooser().showOpenDialog(this.getScene().getWindow());
+            if(file != null){
+              try{
+                view.setImage(new Image(new FileInputStream(file.getAbsolutePath()), 75, 75, false, false));
+                this.setHeader(new Tile(name, "", view));
+                Main.classroomController.saveUser(name, file.getAbsolutePath());
+              } catch (FileNotFoundException ex) {
+                throw new RuntimeException(ex);
+              }
+            }
+          });
+          this.setHeader(new Tile(name, "", view));
+          Main.classroomController.saveUser(name, selectedFile.getAbsolutePath());
+        } catch (FileNotFoundException ex) {
+          throw new RuntimeException(ex);
+        }
+      }
+    });
     this.setHeader(header1);
 
     if(timeByActivity.isEmpty()){
@@ -64,7 +90,7 @@ public class UserDetailView extends Card {
 
       var chart = new PieChart(data);
       chart.setMinHeight(300);
-      chart.setLegendVisible(true);
+      chart.setLegendVisible(false);
       chart.setTitle("Tijdsbesteding");
 
       this.setBody(chart);

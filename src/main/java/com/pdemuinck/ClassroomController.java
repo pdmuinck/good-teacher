@@ -1,5 +1,6 @@
 package com.pdemuinck;
 
+import atlantafx.base.controls.CustomTextField;
 import atlantafx.base.controls.ToggleSwitch;
 import atlantafx.base.layout.InputGroup;
 import atlantafx.base.theme.Styles;
@@ -16,6 +17,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
+import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.input.DragEvent;
@@ -43,7 +45,7 @@ public class ClassroomController implements Initializable {
   private TextField newActivity;
 
   @FXML
-  private TextField newUser;
+  private CustomTextField newUser;
 
   @FXML
   private ToggleSwitch presentMode;
@@ -215,7 +217,7 @@ public class ClassroomController implements Initializable {
   public void onPresentMode(MouseEvent event) {
     if (this.presentMode.isSelected()) {
       List<FixedActivityView> fixedActivityViewStream = activityService.fetchActivities().stream()
-          .map(a -> new FixedActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(),
+          .filter(Activity::isShow).map(a -> new FixedActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(),
               activityService))
           .collect(
               Collectors.toList());
@@ -240,6 +242,7 @@ public class ClassroomController implements Initializable {
           .map(k -> new EditableUserView(k.getName(), k.getAvatar(), activityService.timeByActivity(k.getName()))).collect(
               Collectors.toList());
       kids.getChildren().clear();
+      kids.getChildren().add(new Accordion(editableUserViews.toArray(new TitledPane[editableUserViews.size()])));
       kids.getChildren().addAll(editableUserViews);
       activityButtons.getChildren().clear();
       activityButtons.getChildren().addAll(presentMode);

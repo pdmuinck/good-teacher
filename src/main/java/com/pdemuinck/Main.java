@@ -3,7 +3,6 @@ package com.pdemuinck;
 
 import atlantafx.base.theme.PrimerLight;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Random;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -17,8 +16,11 @@ public class Main extends Application {
 
   public static String session;
 
+  public static Stage stage;
+
   @Override
   public void start(Stage stage) throws IOException {
+    this.stage = stage;
     int leftLimit = 48; // numeral '0'
     int rightLimit = 122; // letter 'z'
     int targetStringLength = 15;

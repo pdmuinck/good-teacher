@@ -3,7 +3,6 @@ package com.pdemuinck;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javafx.scene.image.Image;
