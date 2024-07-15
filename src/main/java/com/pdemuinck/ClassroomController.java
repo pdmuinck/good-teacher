@@ -273,9 +273,9 @@ public class ClassroomController implements Initializable {
       newActivity.setVisible(false);
       newUser.setVisible(false);
       fixedUserViews =
-          userService.fetchUsers().stream().map(k -> new FixedUserView(k.getName(), k.getAvatar()))
-              .collect(
-                  Collectors.toList());
+          userService.fetchUsers().stream().filter(u -> !u.getAvatar().isBlank())
+              .map(k -> new FixedUserView(k.getName(), k.getAvatar()))
+              .collect(Collectors.toList());
       kids.getChildren().clear();
       kids.getChildren().addAll(fixedUserViews);
       activityButtons.getChildren().clear();
