@@ -13,7 +13,7 @@
 <VBox onDragExited="#reset" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.pdemuinck.ClassroomController">
     <children>
-        <SplitPane>
+        <SplitPane fx:id="splitScreen">
             <ScrollPane fx:id="users" maxWidth="600" minWidth="150">
                 <VBox>
                     <CustomTextField promptText="Voeg een nieuwe gebruiker toe" fx:id="newUser" onKeyPressed="#addUser"/>

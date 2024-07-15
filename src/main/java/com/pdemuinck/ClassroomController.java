@@ -40,6 +40,9 @@ public class ClassroomController implements Initializable {
   private ScrollPane activities, users;
 
   @FXML
+  private SplitPane splitScreen;
+
+  @FXML
   private VBox kids;
 
   @FXML
@@ -105,7 +108,27 @@ public class ClassroomController implements Initializable {
       event.acceptTransferModes(TransferMode.ANY);
       event.consume();
     });
-    kids.getParent().setOnDragDropped((DragEvent event) -> {
+    splitScreen.setOnDragDropped((DragEvent event) -> {
+      Dragboard db = event.getDragboard();
+      if (db.hasString()) {
+        String user = db.getString();
+        if (presentMode.isSelected()) {
+          this.fixedUserViews.stream().filter(u -> u.getAvatar().equals(user.split(",")[1]))
+              .findFirst()
+              .ifPresent(x -> x.setVisible(true));
+          kids.getChildren().clear();
+          kids.getChildren().addAll(this.fixedUserViews.stream().filter(Node::isVisible).collect(
+              Collectors.toList()));
+          event.setDropCompleted(true);
+        } else {
+          event.setDropCompleted(false);
+        }
+      } else {
+        event.setDropCompleted(false);
+      }
+      event.consume();
+    });
+    kids.setOnDragDropped((DragEvent event) -> {
       Dragboard db = event.getDragboard();
       if (db.hasString()) {
         String user = db.getString();
@@ -181,9 +204,13 @@ public class ClassroomController implements Initializable {
   @FXML
   public void reset(DragEvent event) {
     if (event.getTransferMode() == null) {
-      String avatar = event.getDragboard().getString();
-      this.fixedUserViews.stream().filter(uv -> uv.getAvatar().equals(avatar)).findFirst()
-          .ifPresent(uv -> uv.reset(avatar));
+      String avatar = event.getDragboard().getString().split(",")[1];
+      String name = event.getDragboard().getString().split(",")[0];
+      this.fixedUserViews.stream()
+          .filter(uv -> uv.getName().equals(name) && uv.getAvatar().equals(avatar)).findFirst()
+          .ifPresent(uv -> {
+            uv.setVisible(true);
+          });
     }
   }
 
