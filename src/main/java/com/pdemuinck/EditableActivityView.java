@@ -1,5 +1,8 @@
 package com.pdemuinck;
 
+import atlantafx.base.controls.Card;
+import atlantafx.base.controls.CustomTextField;
+import atlantafx.base.controls.Tile;
 import atlantafx.base.layout.InputGroup;
 import atlantafx.base.theme.Styles;
 import java.io.File;
@@ -9,13 +12,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -130,6 +138,38 @@ public class EditableActivityView extends VBox {
       super.getChildren().add(new Label(name));
     }
     super.getChildren().add(fillSpotPane());
+
+    var card2 = new Card();
+    card2.getStyleClass().add(Styles.ELEVATED_1);
+    card2.setMinWidth(300);
+    card2.setMaxWidth(300);
+
+    var header2 = new Tile(
+        "Black list",
+        "Weiger deelnemers tot deelname aan deze activiteit"
+    );
+    card2.setHeader(header2);
+
+    var tf2 = new CustomTextField();
+    tf2.setPromptText("Zoek persoon");
+    tf2.setLeft(new FontIcon(Feather.SEARCH));
+    card2.setSubHeader(tf2);
+
+    var body2 = new VBox(10);
+    card2.setBody(body2);
+    for (int i = 0; i < 5; i++) {
+      var cb = new CheckBox();
+      var lbl = new Label("name");
+      var circle = new Circle(
+          8, Color.web("red")
+      );
+
+      var row = new HBox(10, circle, cb, lbl);
+      row.setAlignment(Pos.CENTER_LEFT);
+      body2.getChildren().add(row);
+    }
+
+    this.getChildren().add(card2);
   }
 
   private GridPane fillSpotPane() {
