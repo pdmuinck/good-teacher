@@ -1,11 +1,16 @@
 package com.pdemuinck;
 
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.maxBy;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -24,7 +29,7 @@ public class ActivityMockService implements ActivityService {
         blackLists = dataStore.fetchBlackLists().stream().filter(s -> s.startsWith(activityName))
         .map(s -> Arrays.asList(s.split(","))).flatMap(Collection::stream).toList();
     activities.forEach(a -> {
-      if(a.getName().equals(activityName)){
+      if (a.getName().equals(activityName)) {
         a.setBlackList(blackLists);
         a.join(LocalDateTime.now(), userName);
       }
@@ -52,7 +57,7 @@ public class ActivityMockService implements ActivityService {
   }
 
   @Override
-  public List<Activity> getActivities(){
+  public List<Activity> getActivities() {
     return this.activities;
   }
 
@@ -82,7 +87,8 @@ public class ActivityMockService implements ActivityService {
           throw new RuntimeException(e);
         }
       }).collect(Collectors.toList());
-      activities = activities.stream().filter(a -> !a.getName().isBlank()).collect(Collectors.toList());
+      activities =
+          activities.stream().filter(a -> !a.getName().isBlank()).collect(Collectors.toList());
       return activities;
     } catch (ArrayIndexOutOfBoundsException e) {
       return new ArrayList<>();
@@ -128,7 +134,7 @@ public class ActivityMockService implements ActivityService {
   @Override
   public void updateActivity(String name, String icon, int spots) {
     List<String> data = new ArrayList<>();
-    for(Activity activity : activities){
+    for (Activity activity : activities) {
       if (name.equals(activity.getName())) {
         activity.setImageUrl(icon);
         activity.setMaxSpots(spots);
@@ -155,9 +161,23 @@ public class ActivityMockService implements ActivityService {
 
   @Override
   public List<TimeReportRow> fetchTimeReport(String name) {
-    List<String> timings = dataStore.fetchActivityTime();
+    List<String> timings = dataStore.fetchActivityTime().stream().filter(l -> l.contains(name)).toList();
     List<TimeReportRow> rows = timings.stream().map(this::parse).collect(Collectors.toList());
     return rows.stream().filter(r -> r.getUserName().equals(name)).collect(Collectors.toList());
+  }
+
+  @Override
+  public Map<String, Optional<Long>> timeByActivity(String name) {
+    List<TimeReportRow> timeReportRows = fetchTimeReport(name);
+    Map<String, Map<String, Optional<TimeReportRow>>> collect = timeReportRows.stream().collect(
+        groupingBy(TimeReportRow::getActivityName, groupingBy(TimeReportRow::getSession,
+            maxBy(Comparator.comparingLong(TimeReportRow::getTime)))));
+
+    return collect.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(),
+        e -> e.getValue().values().stream()
+            .filter(Optional::isPresent)
+            .map(x -> x.get().getTime())
+            .reduce(Long::sum)));
   }
 
   @Override
@@ -167,6 +187,7 @@ public class ActivityMockService implements ActivityService {
 
   private TimeReportRow parse(String data) {
     String[] split = data.split(",", -1);
-    return new TimeReportRow(split[0], split[1], split[2], LocalDate.parse(split[3]), Long.valueOf(split[4]));
+    return new TimeReportRow(split[0].trim(), split[1].trim(), split[2].trim(), LocalDate.parse(split[3].trim()),
+        Long.valueOf(split[4].trim()));
   }
 }

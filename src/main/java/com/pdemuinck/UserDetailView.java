@@ -6,24 +6,21 @@ import atlantafx.base.theme.Styles;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import javafx.beans.binding.Bindings;
+import java.util.Map;
+import java.util.Optional;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
-import javafx.scene.chart.XYChart;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
 
 public class UserDetailView extends Card {
-  public UserDetailView(String name, String avatar) {
+
+
+  public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity) {
     super();
     this.getStyleClass().add(Styles.ELEVATED_1);
     this.setMinWidth(500);
@@ -57,19 +54,20 @@ public class UserDetailView extends Card {
     var header1 = new Tile(name, "", avatarView);
     this.setHeader(header1);
 
+    if(timeByActivity.isEmpty()){
+      this.setBody(new Label("Nog geen registratie van activiteiten"));
+    } else {
+      ObservableList<PieChart.Data> data = FXCollections.observableArrayList();
+      timeByActivity.entrySet().stream().filter(t -> t.getValue().isPresent()).forEach(e -> {
+        data.add(new PieChart.Data(e.getKey(), e.getValue().get()));
+      });
 
-    ObservableList<PieChart.Data> data = FXCollections.observableArrayList(
-        new PieChart.Data("tekenen", 10),
-        new PieChart.Data("knutselen", 20),
-        new PieChart.Data("ipads", 40),
-        new PieChart.Data("bouwen", 45)
-    );
+      var chart = new PieChart(data);
+      chart.setMinHeight(300);
+      chart.setLegendVisible(true);
+      chart.setTitle("Tijdsbesteding");
 
-    var chart = new PieChart(data);
-    chart.setMinHeight(300);
-    chart.setLegendVisible(false);
-    chart.setTitle("Tijdsbesteding");
-
-    this.setBody(chart);
+      this.setBody(chart);
+    }
   }
 }

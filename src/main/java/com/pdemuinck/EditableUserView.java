@@ -4,6 +4,8 @@ import atlantafx.base.layout.InputGroup;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.Map;
+import java.util.Optional;
 import javafx.scene.control.Label;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Tooltip;
@@ -20,8 +22,8 @@ public class EditableUserView extends TitledPane {
   private String name;
   private ImageView imageView;
 
-  public EditableUserView(String name, String avatar) {
-    super(name, new InputGroup(new UserDetailView(name, avatar)));
+  public EditableUserView(String name, String avatar, Map<String, Optional<Long>> timeByActivity) {
+    super(name, new InputGroup(new UserDetailView(name, avatar, timeByActivity)));
     this.name = name;
     this.avatar = avatar;
     this.imageView = new ImageView();

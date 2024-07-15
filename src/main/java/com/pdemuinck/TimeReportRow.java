@@ -32,4 +32,8 @@ public class TimeReportRow {
   public long getTime() {
     return time;
   }
+
+  public String getSession() {
+    return session;
+  }
 }

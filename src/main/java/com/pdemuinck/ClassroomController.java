@@ -5,6 +5,7 @@ import atlantafx.base.layout.InputGroup;
 import atlantafx.base.theme.Styles;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -78,7 +79,7 @@ public class ClassroomController implements Initializable {
     activitiesPane.setHgap(10);
     fillWithEditableActivities(this.activityViews);
     editableUserViews =
-        userService.fetchUsers().stream().map(k -> new EditableUserView(k.getName(), k.getAvatar()))
+        userService.fetchUsers().stream().map(k -> new EditableUserView(k.getName(), k.getAvatar(), activityService.timeByActivity(k.getName())))
             .collect(
                 Collectors.toList());
     kids.getChildren().add(new Accordion(editableUserViews.toArray(new TitledPane[editableUserViews.size()])));
@@ -194,7 +195,7 @@ public class ClassroomController implements Initializable {
       newUser.setText("");
       Optional<User> user = userService.fetchUserByName(text);
       if (user.isEmpty()) {
-        editableUserViews.add(new EditableUserView(text, ""));
+        editableUserViews.add(new EditableUserView(text, "", new HashMap<>()));
         userService.addUser(text, "");
       }
       kids.getChildren().clear();
@@ -236,7 +237,7 @@ public class ClassroomController implements Initializable {
       newActivity.setVisible(true);
       newUser.setVisible(true);
       editableUserViews = userService.fetchUsers().stream()
-          .map(k -> new EditableUserView(k.getName(), k.getAvatar())).collect(
+          .map(k -> new EditableUserView(k.getName(), k.getAvatar(), activityService.timeByActivity(k.getName()))).collect(
               Collectors.toList());
       kids.getChildren().clear();
       kids.getChildren().addAll(editableUserViews);

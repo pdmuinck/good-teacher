@@ -1,10 +1,13 @@
 package com.pdemuinck;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -73,4 +76,21 @@ class ActivityMockServiceTest {
     assertThrows(RuntimeException.class, () -> activityService.joinActivity("painting", "robin"));
   }
 
+  @Test
+  public void summarizes_timing_data_by_activity(){
+    FileDataStore dataStoreMock = Mockito.mock(FileDataStore.class);
+    when(dataStoreMock.fetchActivityTime()).thenReturn(List.of("charlie, session1,drawing,2024-07-15,1000", "charlie,session1,painting,2024-07-15,1000"));
+    ActivityService activityService = new ActivityMockService(dataStoreMock);
+    Map<String, Optional<Long>> timings = activityService.timeByActivity("charlie");
+    assertThat(timings).contains(entry("drawing", Optional.of(1000L)), entry("painting", Optional.of(1000L)));
+  }
+
+  @Test
+  public void takes_max_time_per_session_when_summarizing_time(){
+    FileDataStore dataStoreMock = Mockito.mock(FileDataStore.class);
+    when(dataStoreMock.fetchActivityTime()).thenReturn(List.of("charlie, session1,painting,2024-07-15,1000", "charlie,session1,painting,2024-07-15,2000"));
+    ActivityService activityService = new ActivityMockService(dataStoreMock);
+    Map<String, Optional<Long>> timings = activityService.timeByActivity("charlie");
+    assertThat(timings).contains(entry("painting", Optional.of(2000L)));
+  }
 }

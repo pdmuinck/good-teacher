@@ -1,6 +1,8 @@
 package com.pdemuinck;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public interface ActivityService {
   void joinActivity(String activity, String userName);
@@ -18,6 +20,8 @@ public interface ActivityService {
   void hideActivity(String name);
 
   List<TimeReportRow> fetchTimeReport(String name);
+
+  Map<String, Optional<Long>> timeByActivity(String name);
 
   void addToBlackList(String activity, String user);
 
