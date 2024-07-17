@@ -37,7 +37,9 @@ public class ActivityMockService implements ActivityService {
     activities.forEach(a -> {
       if (a.getName().equals(activityName)) {
         a.setBlackList(blackLists);
-        a.join(LocalDateTime.now(), userName);
+        if(!a.isOnBlackList(userName)){
+          a.join(LocalDateTime.now(), userName);
+        }
       }
     });
   }

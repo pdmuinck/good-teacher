@@ -203,14 +203,15 @@ public class ClassroomController implements Initializable {
 
   @FXML
   public void reset(DragEvent event) {
-    if (event.getTransferMode() == null) {
-      String avatar = event.getDragboard().getString().split(",")[1];
+    if(event.getTransferMode() == null){
       String name = event.getDragboard().getString().split(",")[0];
-      this.fixedUserViews.stream()
-          .filter(uv -> uv.getName().equals(name) && uv.getAvatar().equals(avatar)).findFirst()
-          .ifPresent(uv -> {
-            uv.setVisible(true);
-          });
+      this.fixedUserViews.forEach(uv -> {
+        if (uv.getName().equals(name)) {
+          uv.setVisible(true);
+        }
+      });
+      kids.getChildren().clear();
+      kids.getChildren().addAll(this.fixedUserViews);
     }
   }
 
@@ -266,7 +267,7 @@ public class ClassroomController implements Initializable {
       List<FixedActivityView> fixedActivityViewStream = activityService.fetchActivities().stream()
           .filter(Activity::isShow)
           .map(a -> new FixedActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(),
-              activityService))
+              activityService, userService))
           .collect(
               Collectors.toList());
       fillWithFixedActivities(fixedActivityViewStream);
@@ -302,6 +303,15 @@ public class ClassroomController implements Initializable {
   public void pauseAllActivities(MouseEvent actionEvent) {
     activityService.pauseAllActivities();
     updateActivityChange("All activities got paused");
+  }
+
+  public void hideUser(String name) {
+    this.fixedUserViews.forEach(uv -> {
+      if(uv.getName().equals(name)){
+        uv.setVisible(false);
+      }
+    });
+
   }
 
   private static class Dialog extends VBox {

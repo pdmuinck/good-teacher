@@ -8,6 +8,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
@@ -26,6 +27,10 @@ public class FixedUserView extends HBox {
   public FixedUserView(String name, String avatar) {
     this.name = name;
     this.avatar = avatar;
+    super.setOnDragOver((DragEvent event) -> {
+      event.acceptTransferModes(TransferMode.NONE);
+      event.consume();
+    });
     if (avatar.isBlank()) {
       Label label = new Label(name);
 

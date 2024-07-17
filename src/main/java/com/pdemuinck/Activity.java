@@ -82,6 +82,10 @@ public class Activity {
     }
   }
 
+  public boolean isOnBlackList(String name){
+    return blackList.contains(name);
+  }
+
   public void leave(LocalDateTime eventTs, String name) {
     availableSpots++;
     LocalDateTime joinTs = joinTimeByKid.get(name);
