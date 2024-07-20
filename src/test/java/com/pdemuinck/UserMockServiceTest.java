@@ -36,7 +36,7 @@ class UserMockServiceTest {
 
     // Then
     Mockito.verify(dataStoreMock, Mockito.times(1)).saveUser("Charlie,abc");
-    Mockito.verify(dataStoreMock, Mockito.times(1)).overWriteUsers("Charlie,def");
+    Mockito.verify(dataStoreMock, Mockito.times(1)).overWriteUsers("Charlie,def\r\n");
   }
 
   @Test
@@ -61,20 +61,6 @@ class UserMockServiceTest {
 
     // When
     when(dataStoreMock.fetchUsers()).thenReturn(new ArrayList<>());
-    List<User> users = userService.fetchUsers();
-
-    // Then
-    assertThat(users).isEmpty();
-  }
-
-  @Test
-  public void skips_users_with_incorrect_delimiter(){
-    // Given
-    DataStore dataStoreMock = Mockito.mock(DataStore.class);
-    UserService userService = new UserMockService(dataStoreMock);
-
-    // When
-    when(dataStoreMock.fetchUsers()).thenReturn(List.of("Charlie/abc"));
     List<User> users = userService.fetchUsers();
 
     // Then

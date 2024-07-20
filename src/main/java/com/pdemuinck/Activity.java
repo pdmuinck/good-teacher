@@ -123,6 +123,10 @@ public class Activity {
             Collectors.joining("\r\n"));
   }
 
+  public List<String> participants(){
+    return durationByKid.keySet().stream().toList();
+  }
+
   public int getMaxSpots() {
     return maxSpots;
   }

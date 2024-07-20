@@ -64,7 +64,9 @@ class ActivityMockServiceTest {
     when(dataStoreMock.fetchBlackLists()).thenReturn(List.of("painting,charlie"));
     ActivityService activityService = new ActivityMockService(dataStoreMock);
     activityService.addActivity("painting");
-    assertThrows(RuntimeException.class, () -> activityService.joinActivity("painting", "charlie"));
+    activityService.joinActivity("painting", "charlie");
+    List<String> participants = activityService.getParticipants("painting");
+    assertThat(participants).doesNotContain("charlie");
   }
 
   @Test

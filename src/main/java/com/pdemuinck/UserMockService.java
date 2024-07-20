@@ -2,6 +2,7 @@ package com.pdemuinck;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -20,12 +21,14 @@ public class UserMockService implements UserService {
         .map(x -> {
           if (x.split(",").length == 1) {
             return new User(x.split(",")[0], "");
+          } else if (x.split(",").length == 0) {
+            return null;
           } else {
             return new User(x.split(",")[0], x.split(",")[1]);
           }
         }).collect(
             Collectors.toList());
-    return this.users;
+    return this.users.stream().filter(Objects::nonNull).collect(Collectors.toList());
   }
 
   @Override

@@ -30,4 +30,6 @@ public interface ActivityService {
   List<Activity> getActivities();
 
   void removeFromBlackList(String activity, String u);
+
+  List<String> getParticipants(String name);
 }

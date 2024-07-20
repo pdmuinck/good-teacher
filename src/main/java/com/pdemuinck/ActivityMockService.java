@@ -61,7 +61,7 @@ public class ActivityMockService implements ActivityService {
     activities.forEach(activity -> activity.pause(LocalDateTime.now()));
     String data =
         activities.stream().map(Activity::getDurationByKid).collect(Collectors.joining("\r\n"));
-    dataStore.saveActivityTime(data);
+    dataStore.saveActivityTime(data + "\r\n");
   }
 
   @Override
@@ -75,6 +75,13 @@ public class ActivityMockService implements ActivityService {
         fetchBlackList(activity).stream().filter(a -> !a.contains(u)).map(s -> String.join(",", activity, s))
             .collect(Collectors.joining("\r\n"));
     dataStore.overwriteBlackList(data);
+  }
+
+  @Override
+  public List<String> getParticipants(String name) {
+    Optional<Activity> activity =
+        this.activities.stream().filter(a -> a.getName().equals(name)).findFirst();
+    return activity.map(Activity::participants).orElse(new ArrayList<>());
   }
 
 
