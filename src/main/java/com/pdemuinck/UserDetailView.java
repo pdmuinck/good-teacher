@@ -20,6 +20,10 @@ import javafx.stage.FileChooser;
 public class UserDetailView extends Card {
 
   public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity) {
+    this(name, avatar, timeByActivity, null);
+  }
+
+  public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity, FileChooser fileChooser) {
     super();
     this.getStyleClass().add(Styles.ELEVATED_1);
     this.setMinWidth(500);
@@ -32,8 +36,12 @@ public class UserDetailView extends Card {
       try {
         avatarView = new ImageView(new Image(new FileInputStream(avatar), 75, 75, false, false));
         avatarView.setOnMouseClicked((MouseEvent event) -> {
-          FileChooser fileChooser = new FileChooser();
-          File selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
+          File selectedFile;
+          if(fileChooser == null){
+            selectedFile = new FileChooser().showOpenDialog(this.getScene().getWindow());
+          } else {
+            selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
+          }
           if (selectedFile != null) {
             FileInputStream fs = null;
             try {
@@ -53,7 +61,12 @@ public class UserDetailView extends Card {
     var header1 = new Tile(name, "", avatarView);
 
     header1.setOnMouseClicked(e -> {
-      File selectedFile = new FileChooser().showOpenDialog(this.getScene().getWindow());
+      File selectedFile;
+      if(fileChooser == null){
+        selectedFile = new FileChooser().showOpenDialog(this.getScene().getWindow());
+      } else {
+        selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
+      }
       if (selectedFile != null) {
         try {
           FileInputStream fs = new FileInputStream(selectedFile.getAbsolutePath());
