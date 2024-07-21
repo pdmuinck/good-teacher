@@ -6,6 +6,7 @@ import atlantafx.base.theme.Styles;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.Optional;
 import javafx.collections.FXCollections;
@@ -19,11 +20,15 @@ import javafx.stage.FileChooser;
 
 public class UserDetailView extends Card {
 
-  public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity) {
-    this(name, avatar, timeByActivity, null);
+  private UserService userService;
+
+  public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity,
+                        UserService userService) {
+    this(name, avatar, timeByActivity, null, userService);
   }
 
-  public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity, FileChooser fileChooser) {
+  public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity,
+                        FileChooser fileChooser, UserService userService) {
     super();
     this.getStyleClass().add(Styles.ELEVATED_1);
     this.setMinWidth(500);
@@ -32,68 +37,68 @@ public class UserDetailView extends Card {
     this.setMinHeight(500);
 
     ImageView avatarView = new ImageView();
-    if(!avatar.isBlank()){
+    if (!avatar.isBlank()) {
       try {
         avatarView = new ImageView(new Image(new FileInputStream(avatar), 75, 75, false, false));
         avatarView.setOnMouseClicked((MouseEvent event) -> {
           File selectedFile;
-          if(fileChooser == null){
+          if (fileChooser == null) {
             selectedFile = new FileChooser().showOpenDialog(this.getScene().getWindow());
           } else {
             selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
           }
           if (selectedFile != null) {
-            FileInputStream fs = null;
+            ImageView imageView;
             try {
-              fs = new FileInputStream(selectedFile.getAbsolutePath());
-            } catch (FileNotFoundException e) {
+              imageView = loadAvatar(selectedFile);
+            } catch (MalformedURLException e) {
               throw new RuntimeException(e);
             }
-            Image image = new Image(fs, 75, 75, false, false);
-            this.setHeader(new Tile(name, "", new ImageView(image)));
-            Main.classroomController.saveUser(name, selectedFile.getAbsolutePath());
+            imageView.setId(String.join("_", "image_view", name));
+            this.setHeader(new Tile(name, "", imageView));
+            userService.addUser(name, imageView.getImage().getUrl());
           }
         });
       } catch (FileNotFoundException e) {
         throw new RuntimeException(e);
       }
     }
-    var header1 = new Tile(name, "", avatarView);
+    Tile header1 = new Tile(name, "", avatarView);
+    header1.setId(String.join("_", "user_detail_header", name));
 
     header1.setOnMouseClicked(e -> {
       File selectedFile;
-      if(fileChooser == null){
+      if (fileChooser == null) {
         selectedFile = new FileChooser().showOpenDialog(this.getScene().getWindow());
       } else {
         selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
       }
       if (selectedFile != null) {
         try {
-          FileInputStream fs = new FileInputStream(selectedFile.getAbsolutePath());
-          Image image = new Image(fs, 75, 75, false, false);
-          ImageView view = new ImageView(image);
+          ImageView view = loadAvatar(selectedFile);
+          view.setId(String.join("_", "image_view", name));
           view.setOnMouseClicked(x -> {
             File file = new FileChooser().showOpenDialog(this.getScene().getWindow());
-            if(file != null){
-              try{
-                view.setImage(new Image(new FileInputStream(file.getAbsolutePath()), 75, 75, false, false));
-                this.setHeader(new Tile(name, "", view));
-                Main.classroomController.saveUser(name, file.getAbsolutePath());
-              } catch (FileNotFoundException ex) {
+            if (file != null) {
+              try {
+                ImageView newView = loadAvatar(file);
+                this.setHeader(new Tile(name, "", newView));
+                userService.addUser(name, newView.getImage().getUrl());
+              } catch (MalformedURLException ex) {
                 throw new RuntimeException(ex);
               }
             }
           });
           this.setHeader(new Tile(name, "", view));
-          Main.classroomController.saveUser(name, selectedFile.getAbsolutePath());
-        } catch (FileNotFoundException ex) {
+          userService.addUser(name, view.getImage().getUrl());
+        } catch (MalformedURLException ex) {
           throw new RuntimeException(ex);
         }
       }
     });
     this.setHeader(header1);
 
-    if(timeByActivity.isEmpty()){
+    if (timeByActivity.isEmpty()) {
       this.setBody(new Label("Nog geen registratie van activiteiten"));
     } else {
       ObservableList<PieChart.Data> data = FXCollections.observableArrayList();
@@ -108,5 +113,11 @@ public class UserDetailView extends Card {
 
       this.setBody(chart);
     }
+  }
+
+  private ImageView loadAvatar(File selectedFile) throws MalformedURLException {
+    String externalForm = selectedFile.toURI().toURL().toExternalForm();
+    Image image = new Image(externalForm, 75, 75, false, false);
+    return new ImageView(image);
   }
 }

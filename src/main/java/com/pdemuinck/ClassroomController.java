@@ -98,7 +98,7 @@ public class ClassroomController implements Initializable {
     fillWithEditableActivities(this.activityViews);
     editableUserViews =
         userService.fetchUsers().stream().map(k -> new EditableUserView(k.getName(), k.getAvatar(),
-                activityService.timeByActivity(k.getName())))
+                activityService.timeByActivity(k.getName()), userService))
             .collect(
                 Collectors.toList());
     kids.getChildren()
@@ -240,7 +240,7 @@ public class ClassroomController implements Initializable {
       newUser.setText("");
       Optional<User> user = userService.fetchUserByName(text);
       if (user.isEmpty()) {
-        editableUserViews.add(new EditableUserView(text, "", new HashMap<>()));
+        editableUserViews.add(new EditableUserView(text, "", new HashMap<>(), userService));
         userService.addUser(text, "");
       }
       kids.getChildren().clear();
@@ -289,7 +289,7 @@ public class ClassroomController implements Initializable {
       newUser.setVisible(true);
       editableUserViews = userService.fetchUsers().stream()
           .map(k -> new EditableUserView(k.getName(), k.getAvatar(),
-              activityService.timeByActivity(k.getName()))).collect(
+              activityService.timeByActivity(k.getName()), userService)).collect(
               Collectors.toList());
       kids.getChildren().clear();
       kids.getChildren()
