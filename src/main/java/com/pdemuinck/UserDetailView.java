@@ -3,6 +3,7 @@ package com.pdemuinck;
 import atlantafx.base.controls.Card;
 import atlantafx.base.controls.Tile;
 import atlantafx.base.theme.Styles;
+import com.pdemuinck.views.AvatarView;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -24,7 +25,7 @@ public class UserDetailView extends Card {
 
   public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity,
                         UserService userService) {
-    this(name, avatar, timeByActivity, null, userService);
+    this(name, avatar, timeByActivity, new FileChooser(), userService);
   }
 
   public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity,
@@ -38,52 +39,37 @@ public class UserDetailView extends Card {
 
     ImageView avatarView = new ImageView();
     if (!avatar.isBlank()) {
-      try {
-        avatarView = new ImageView(new Image(new FileInputStream(avatar), 75, 75, false, false));
-        avatarView.setOnMouseClicked((MouseEvent event) -> {
-          File selectedFile;
-          if (fileChooser == null) {
-            selectedFile = new FileChooser().showOpenDialog(this.getScene().getWindow());
-          } else {
-            selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
-          }
-          if (selectedFile != null) {
-            ImageView imageView;
-            try {
-              imageView = loadAvatar(selectedFile);
-            } catch (MalformedURLException e) {
-              throw new RuntimeException(e);
-            }
-            imageView.setId(String.join("_", "image_view", name));
+      avatarView = new AvatarView(avatar, name);
+      avatarView.setOnMouseClicked((MouseEvent event) -> {
+        File selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
+        if (selectedFile != null) {
+          try {
+            ImageView imageView =
+                new AvatarView(selectedFile.toURI().toURL().toExternalForm(), name);
             this.setHeader(new Tile(name, "", imageView));
             userService.addUser(name, imageView.getImage().getUrl());
+          } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
           }
-        });
-      } catch (FileNotFoundException e) {
-        throw new RuntimeException(e);
-      }
+        }
+      });
     }
     Tile header1 = new Tile(name, "", avatarView);
     header1.setId(String.join("_", "user_detail_header", name));
 
     header1.setOnMouseClicked(e -> {
-      File selectedFile;
-      if (fileChooser == null) {
-        selectedFile = new FileChooser().showOpenDialog(this.getScene().getWindow());
-      } else {
-        selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
-      }
+      File selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
       if (selectedFile != null) {
         try {
-          ImageView view = loadAvatar(selectedFile);
-          view.setId(String.join("_", "image_view", name));
+          ImageView view = new AvatarView(selectedFile.toURI().toURL().toExternalForm(), name);
           view.setOnMouseClicked(x -> {
-            File file = new FileChooser().showOpenDialog(this.getScene().getWindow());
+            File file = fileChooser.showOpenDialog(this.getScene().getWindow());
             if (file != null) {
               try {
-                ImageView newView = loadAvatar(file);
-                this.setHeader(new Tile(name, "", newView));
-                userService.addUser(name, newView.getImage().getUrl());
+                ImageView source = (ImageView) x.getSource();
+                loadNewImage((ImageView) x.getSource(), file);
+                this.setHeader(new Tile(name, "", source));
+                userService.addUser(name, source.getImage().getUrl());
               } catch (MalformedURLException ex) {
                 throw new RuntimeException(ex);
               }
@@ -110,14 +96,15 @@ public class UserDetailView extends Card {
       chart.setMinHeight(300);
       chart.setLegendVisible(false);
       chart.setTitle("Tijdsbesteding");
+      chart.setId(String.join("_", "activity_timing", name));
 
       this.setBody(chart);
     }
   }
 
-  private ImageView loadAvatar(File selectedFile) throws MalformedURLException {
+  private void loadNewImage(ImageView imageView, File selectedFile) throws MalformedURLException {
     String externalForm = selectedFile.toURI().toURL().toExternalForm();
     Image image = new Image(externalForm, 75, 75, false, false);
-    return new ImageView(image);
+    imageView.setImage(image);
   }
 }
