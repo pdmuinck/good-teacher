@@ -13,7 +13,6 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
@@ -71,6 +70,11 @@ public class ClassroomController implements Initializable {
   List<FixedUserView> fixedUserViews = new ArrayList<>();
   List<EditableUserView> editableUserViews = new ArrayList<>();
   List<EditableActivityView> activityViews = new ArrayList<>();
+
+  public ClassroomController(ActivityService activityService, UserService userService){
+    this.activityService = activityService;
+    this.userService = userService;
+  }
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -312,18 +316,5 @@ public class ClassroomController implements Initializable {
       }
     });
 
-  }
-
-  private static class Dialog extends VBox {
-
-    public Dialog(int width, int height) {
-      super();
-
-      setSpacing(10);
-      setAlignment(Pos.CENTER);
-      setMinSize(width, height);
-      setMaxSize(width, height);
-      setStyle("-fx-background-color: -color-bg-default;");
-    }
   }
 }

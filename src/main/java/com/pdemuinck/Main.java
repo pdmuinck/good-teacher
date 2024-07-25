@@ -33,7 +33,11 @@ public class Main extends Application {
         .toString();
     Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
     FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("activities.fxml"));
+    DataStore dataStore = new FileDataStore();
+    ClassroomController controller = new ClassroomController(new ActivityMockService(dataStore), new UserMockService(dataStore));
+    loader.setController(controller);
     Parent root = loader.load();
+
     classroomController = loader.getController();
     Scene scene = new Scene(root, 300, 275);
     stage.setTitle("Good Teacher");
@@ -47,3 +51,4 @@ public class Main extends Application {
   }
 
 }
+
