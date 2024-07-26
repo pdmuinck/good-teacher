@@ -2,6 +2,9 @@ package com.pdemuinck;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,6 +18,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -27,6 +31,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.assertj.core.api.AssertionsForClassTypes;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -41,13 +46,16 @@ public class GuiTest {
   UserService userService = Mockito.mock(UserService.class);
   FileSystemService fileSystemService = Mockito.mock(FileSystemService.class);
   List<Activity> activities = new ArrayList<>();
+  List<User> users = new ArrayList<>();
 
 
   @Start
   private void start(Stage stage) throws URISyntaxException, IOException {
     when(activityService.fetchActivities()).thenReturn(activities);
+    when(userService.fetchUsers()).thenReturn(users);
     FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("activities.fxml"));
-    ClassroomController controller = new ClassroomController(activityService, userService, fileSystemService);
+    ClassroomController controller =
+        new ClassroomController(activityService, userService, fileSystemService);
     loader.setController(controller);
     Parent root = loader.load();
     stage.setScene(new Scene(root));
@@ -57,9 +65,9 @@ public class GuiTest {
   @Test
   public void adds_users_to_the_list(FxRobot robot) throws InterruptedException {
     // When
-    robot.clickOn("#newUser").write("charlie").push(KeyCode.ENTER);
-    robot.clickOn("#newUser").write("maxine").push(KeyCode.ENTER);
-    robot.clickOn("#newUser").write("otto").push(KeyCode.ENTER);
+    addUser(robot, "charlie");
+    addUser(robot, "maxine");
+    addUser(robot, "otto");
 
     // Then
     VBox users = robot.lookup("#kids").queryAs(VBox.class);
@@ -69,9 +77,9 @@ public class GuiTest {
   @Test
   public void saves_users_when_added(FxRobot robot) {
     // When
-    robot.clickOn("#newUser").write("charlie").push(KeyCode.ENTER);
-    robot.clickOn("#newUser").write("maxine").push(KeyCode.ENTER);
-    robot.clickOn("#newUser").write("otto").push(KeyCode.ENTER);
+    addUser(robot, "charlie");
+    addUser(robot, "maxine");
+    addUser(robot, "otto");
 
     // Then
     verify(userService, times(3)).addUser(any(), any());
@@ -108,19 +116,19 @@ public class GuiTest {
   }
 
   @Test
-  public void shows_play_activity_button_in_present_mode(FxRobot robot){
+  public void shows_play_activity_button_in_present_mode(FxRobot robot) {
     switchToPresentMode(robot);
     assertThat(robot.lookup("#playActivities").queryAs(Button.class).isVisible()).isTrue();
   }
 
   @Test
-  public void shows_pause_activity_button_in_present_mode(FxRobot robot){
+  public void shows_pause_activity_button_in_present_mode(FxRobot robot) {
     switchToPresentMode(robot);
     assertThat(robot.lookup("#pauseActivities").queryAs(Button.class).isVisible()).isTrue();
   }
 
   @Test
-  public void shows_new_added_activities_in_present_mode(FxRobot robot){
+  public void shows_new_added_activities_in_present_mode(FxRobot robot) {
     addActivity(robot, "drawing");
     addActivity(robot, "painting");
     switchToPresentMode(robot);
@@ -129,7 +137,7 @@ public class GuiTest {
   }
 
   @Test
-  public void shows_activities_when_going_back_to_edit_mode(FxRobot robot){
+  public void shows_activities_when_going_back_to_edit_mode(FxRobot robot) {
     addActivity(robot, "drawing");
     switchToPresentMode(robot);
     switchToEditMode(robot);
@@ -142,7 +150,8 @@ public class GuiTest {
     addActivity(robot, "drawing", 3);
     Thread.sleep(100);
     addActivitySpot(robot, "drawing");
-    assertThat(robot.lookup("#grid_for_drawing").queryAs(GridPane.class).getChildren()).hasSize(4);
+    assertThat(robot.lookup("#grid_for_drawing").queryAs(GridPane.class).getChildren()).hasSize(4)
+        .allMatch(Node::isVisible);
   }
 
   @Test
@@ -160,7 +169,9 @@ public class GuiTest {
     addActivity(robot, "drawing", 3);
     Thread.sleep(100);
     removeActivitySpot(robot, "drawing");
-    assertThat(robot.lookup("#grid_for_drawing").queryAs(GridPane.class).getChildren()).hasSize(2);
+    assertThat(robot.lookup("#grid_for_drawing").queryAs(GridPane.class).getChildren()).hasSize(2)
+        .allMatch(
+            Node::isVisible);
   }
 
   @Test
@@ -173,29 +184,180 @@ public class GuiTest {
   }
 
   @Test
-  public void can_change_activity_image_in_edit_mode(FxRobot robot)
-      throws URISyntaxException, MalformedURLException {
-    // Given
+  public void loads_first_activity_image_in_edit_mode(FxRobot robot) {
     addActivity(robot, "drawing");
-    File file =
-        Paths.get(this.getClass().getClassLoader().getResource("blue_box.png").toURI()).toFile();
-    when(fileSystemService.openFile(any())).thenReturn(file.toURI().toURL().toExternalForm());
-
-    // When
-    robot.clickOn("#add_image_for_drawing");
-
-    // Then
+    addActivityImage(robot, "drawing", "blue_box.png");
     ImageView imageView = robot.lookup("#image_for_drawing").queryAs(ImageView.class);
     assertThat(imageView.getImage().getUrl()).contains("blue_box.png");
   }
 
-
-  private void addActivity(FxRobot robot, String name){
-    addActivity(robot, name, 3);
+  @Test
+  public void shows_first_activity_image_in_edit_mode(FxRobot robot) {
+    addActivity(robot, "drawing");
+    addActivityImage(robot, "drawing", "blue_box.png");
+    ImageView imageView = robot.lookup("#image_for_drawing").queryAs(ImageView.class);
+    assertThat(imageView.isVisible()).isTrue();
   }
 
-  private void addActivity(FxRobot robot, String name, int spots){
-    Activity activity = new Activity(name, "", spots);
+  @Test
+  public void loads_new_activity_image_in_edit_mode(FxRobot robot) {
+    addActivity(robot, "drawing");
+    addActivityImage(robot, "drawing", "blue_box.png");
+    changeActivityImage(robot, "drawing", "red_box.png");
+    ImageView imageView = robot.lookup("#image_for_drawing").queryAs(ImageView.class);
+    assertThat(imageView.getImage().getUrl()).contains("red_box.png");
+  }
+
+  @Test
+  public void shows_new_activity_image_in_edit_mode(FxRobot robot) {
+    addActivity(robot, "drawing");
+    addActivityImage(robot, "drawing", "blue_box.png");
+    changeActivityImage(robot, "drawing", "red_box.png");
+    ImageView imageView = robot.lookup("#image_for_drawing").queryAs(ImageView.class);
+    assertThat(imageView.isVisible()).isTrue();
+  }
+
+  @Test
+  public void updates_activity_when_image_gets_added(FxRobot robot) {
+    addActivity(robot, "drawing", 1);
+    addActivityImage(robot, "drawing", "blue_box.png");
+    verify(activityService, times(1)).updateActivity(eq("drawing"), contains("blue_box.png"),
+        eq(1));
+  }
+
+  @Test
+  public void updates_activity_when_image_changes(FxRobot robot){
+    addActivity(robot, "drawing", 2);
+    addActivityImage(robot, "drawing", "blue_box.png");
+    changeActivityImage(robot, "drawing", "red_box.png");
+    verify(activityService, times(1)).updateActivity(eq("drawing"), contains("blue_box.png"), eq(2));
+    verify(activityService, times(1)).updateActivity(eq("drawing"), contains("red_box.png"), eq(2));
+  }
+
+  @Test
+  public void loads_activity_images(FxRobot robot) {
+    addActivity(robot, "drawing", "blue_box.png");
+    ImageView imageView = robot.lookup("#image_for_drawing").queryAs(ImageView.class);
+    assertThat(imageView.getImage().getUrl()).contains("blue_box.png");
+  }
+
+  @Test
+  public void shows_activity_images(FxRobot robot) {
+    addActivity(robot, "drawing", "blue_box.png");
+    ImageView imageView = robot.lookup("#image_for_drawing").queryAs(ImageView.class);
+    assertThat(imageView.isVisible()).isTrue();
+  }
+
+  @Test
+  public void hides_activity_when_removed_from_grid(FxRobot robot){
+    addActivity(robot, "drawing", "blue_box.png");
+    removeActivity(robot, "drawing");
+    assertThat(robot.lookup("#activitiesPane").queryAs(GridPane.class).getChildren()).hasSize(0);
+  }
+
+  @Test
+  public void drags_user_to_activity(FxRobot robot){
+    addUser(robot, "charlie", "batman.png");
+    addActivity(robot, "drawing");
+    switchToPresentMode(robot);
+    ImageView firstSpot = robot.lookup("#0_spot_for_drawing").queryAs(ImageView.class);
+    robot.drag("#avatar_charlie").dropTo(firstSpot);
+    assertThat(firstSpot.getImage().getUrl()).contains("batman.png");
+    assertThat(firstSpot.isVisible()).isTrue();
+  }
+
+  @Test
+  public void hides_user_from_user_list_when_dropped_to_an_activity(FxRobot robot){
+    addUser(robot, "charlie", "batman.png");
+    addActivity(robot, "drawing");
+    switchToPresentMode(robot);
+    robot.drag("#avatar_charlie").dropTo("#0_spot_for_drawing");
+    VBox users = robot.lookup("#kids").queryAs(VBox.class);
+    assertThat(users.getChildren().get(0).isVisible()).isFalse();
+  }
+
+  @Test
+  public void shows_activity_image_in_present_mode(FxRobot robot){
+    addActivity(robot, "drawing", "blue_box.png");
+    switchToPresentMode(robot);
+    FixedActivityView fixedActivityView =
+        (FixedActivityView) robot.lookup("#activitiesPane").queryAs(GridPane.class).getChildren()
+            .get(0);
+    ImageView activityImage = (ImageView) fixedActivityView.getChildren().get(0);
+    assertThat(activityImage.getImage().getUrl()).contains("blue_box.png");
+  }
+
+  @Test
+  public void resets_user_in_list_when_dropped_outside_an_activity(FxRobot robot){
+
+  }
+
+  @Test
+  public void resets_user_in_list_when_dropped_in_user_left_pane(FxRobot robot){
+
+  }
+
+  @Test
+  public void resets_user_in_list_when_dropped_on_another_user(FxRobot robot){
+
+  }
+
+  @Test
+  public void shows_black_list_for_each_activity_in_edit_mode(FxRobot robot){
+
+  }
+
+  @Test
+  public void shows_black_list_for_each_activity_in_present_mode(FxRobot robot){
+
+  }
+
+  private void removeActivity(FxRobot robot, String activityName) {
+    robot.clickOn("#remove_activity_" + activityName);
+    activities = activities.stream().filter(a -> !a.getName().equals(activityName)).collect(
+        Collectors.toList());;
+  }
+
+  private void changeActivityImage(FxRobot robot, String activityName, String image) {
+    try {
+      File file =
+          Paths.get(this.getClass().getClassLoader().getResource(image).toURI()).toFile();
+      when(fileSystemService.openFile(any())).thenReturn(file.toURI().toURL().toExternalForm());
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
+    robot.clickOn("#image_for_" + activityName);
+  }
+
+  private void addActivityImage(FxRobot robot, String name, String image) {
+    try {
+      File file =
+          Paths.get(this.getClass().getClassLoader().getResource(image).toURI()).toFile();
+      when(fileSystemService.openFile(any())).thenReturn(file.toURI().toURL().toExternalForm());
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
+    robot.clickOn("#add_image_for_" + name);
+  }
+
+  private void addActivity(FxRobot robot, String name, String image) {
+    addActivity(robot, name, 3, image);
+  }
+
+  private void addActivity(FxRobot robot, String name, int spots) {
+    addActivity(robot, name, spots, "");
+  }
+
+  private void addActivity(FxRobot robot, String name) {
+    addActivity(robot, name, 3, "");
+  }
+
+  private void addActivity(FxRobot robot, String name, int spots, String image) {
+    Activity activity = new Activity(name, image, spots);
     activities.add(activity);
     when(activityService.addActivity(any())).thenReturn(activity);
     robot.clickOn("#newActivity").write(name);
@@ -207,23 +369,43 @@ public class GuiTest {
     robot.push(KeyCode.ENTER);
   }
 
-  private void switchToPresentMode(FxRobot robot){
+  private void switchToPresentMode(FxRobot robot) {
     ToggleSwitch toggleSwitch = robot.lookup("#presentMode").queryAs(ToggleSwitch.class);
     toggleSwitch.setSelected(true);
     robot.clickOn(toggleSwitch);
   }
 
-  private void switchToEditMode(FxRobot robot){
+  private void switchToEditMode(FxRobot robot) {
     ToggleSwitch toggleSwitch = robot.lookup("#presentMode").queryAs(ToggleSwitch.class);
     toggleSwitch.setSelected(false);
     robot.clickOn(toggleSwitch);
   }
 
-  private void addActivitySpot(FxRobot robot, String name){
+  private void addActivitySpot(FxRobot robot, String name) {
     robot.clickOn("#add_spot_for_" + name);
   }
 
-  private void removeActivitySpot(FxRobot robot, String name){
+  private void removeActivitySpot(FxRobot robot, String name) {
     robot.clickOn("#remove_spot_for_" + name);
+  }
+
+  private void addUser(FxRobot robot, String name){
+    robot.clickOn("#newUser").write(name).push(KeyCode.ENTER);
+    users.add(new User(name, ""));
+  }
+
+  private void addUser(FxRobot robot, String name, String avatar){
+    robot.clickOn("#newUser").write(name).push(KeyCode.ENTER);
+    try {
+      File file =
+          Paths.get(this.getClass().getClassLoader().getResource(avatar).toURI()).toFile();
+      when(fileSystemService.openFile(any())).thenReturn(file.toURI().toURL().toExternalForm());
+      users.add(new User(name, file.toURI().toURL().toExternalForm()));
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
+    robot.clickOn("#user_detail_header_" + name);
   }
 }

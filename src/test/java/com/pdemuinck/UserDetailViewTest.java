@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import atlantafx.base.controls.Tile;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -20,7 +21,6 @@ import javafx.scene.Scene;
 import javafx.scene.chart.Chart;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,20 +33,20 @@ import org.testfx.framework.junit5.Start;
 @ExtendWith(ApplicationExtension.class)
 public class UserDetailViewTest {
 
-  FileChooser fileChooser = Mockito.mock(FileChooser.class);
+  FileSystemService fileSystemService = Mockito.mock(FileSystemService.class);
   UserService userService = Mockito.mock(UserService.class);
 
   @Start
   private void start(Stage stage) throws URISyntaxException {
     VBox vBox = new VBox();
     UserDetailView charlie =
-        new UserDetailView("charlie", "", new HashMap<>(), fileChooser, userService);
+        new UserDetailView("charlie", "", new HashMap<>(), fileSystemService, userService);
     UserDetailView valerie = new UserDetailView("valerie",
         this.getClass().getClassLoader().getResource("red_box.png").toExternalForm(),
         new HashMap<>(),
-        fileChooser, userService);
+        fileSystemService, userService);
     UserDetailView maxine =
-        new UserDetailView("maxine", "", Map.of("tekenen", Optional.of(100L)), fileChooser,
+        new UserDetailView("maxine", "", Map.of("tekenen", Optional.of(100L)), fileSystemService,
             userService);
     vBox.getChildren().addAll(charlie, valerie, maxine);
     stage.setScene(new Scene(vBox));
@@ -64,7 +64,7 @@ public class UserDetailViewTest {
     ImageView imageView = robot.lookup(".image-view").queryAs(ImageView.class);
     robot.clickOn(imageView);
     Thread.sleep(2000);
-    Mockito.verify(fileChooser, times(1)).showOpenDialog(any());
+    Mockito.verify(fileSystemService, times(1)).openFile(any());
   }
 
   @Test
@@ -73,7 +73,7 @@ public class UserDetailViewTest {
     Tile tile = robot.lookup("#user_detail_header_charlie").queryAs(Tile.class);
     robot.clickOn(tile);
     Thread.sleep(1000);
-    Mockito.verify(fileChooser, times(1)).showOpenDialog(any());
+    Mockito.verify(fileSystemService, times(1)).openFile(any());
   }
 
   @Test
@@ -81,7 +81,7 @@ public class UserDetailViewTest {
       throws IOException, URISyntaxException, InterruptedException {
     File file =
         Paths.get(this.getClass().getClassLoader().getResource("blue_box.png").toURI()).toFile();
-    when(fileChooser.showOpenDialog(any())).thenReturn(file);
+    when(fileSystemService.openFile(any())).thenReturn(file.toURI().toURL().toExternalForm());
 
     Tile tile = robot.lookup("#user_detail_header_charlie").queryAs(Tile.class);
     robot.clickOn(tile);
@@ -94,11 +94,11 @@ public class UserDetailViewTest {
 
   @Test
   public void saves_user_when_avatar_gets_changed(FxRobot robot)
-      throws InterruptedException, URISyntaxException {
+      throws InterruptedException, URISyntaxException, MalformedURLException {
     // Given
     File file =
         Paths.get(this.getClass().getClassLoader().getResource("blue_box.png").toURI()).toFile();
-    when(fileChooser.showOpenDialog(any())).thenReturn(file);
+    when(fileSystemService.openFile(any())).thenReturn(file.toURI().toURL().toExternalForm());
 
     // When
     Tile tile = robot.lookup("#user_detail_header_charlie").queryAs(Tile.class);
@@ -111,12 +111,12 @@ public class UserDetailViewTest {
 
   @Test
   public void be_able_to_change_avatar_after_setting_it(FxRobot robot)
-      throws URISyntaxException, InterruptedException {
+      throws URISyntaxException, InterruptedException, MalformedURLException {
     File blueBox =
         Paths.get(this.getClass().getClassLoader().getResource("blue_box.png").toURI()).toFile();
     File redBox =
         Paths.get(this.getClass().getClassLoader().getResource("red_box.png").toURI()).toFile();
-    when(fileChooser.showOpenDialog(any())).thenReturn(blueBox, redBox);
+    when(fileSystemService.openFile(any())).thenReturn(blueBox.toURI().toURL().toExternalForm(), redBox.toURI().toURL().toExternalForm());
 
     Tile tile = robot.lookup("#user_detail_header_charlie").queryAs(Tile.class);
     robot.clickOn(tile);
@@ -140,11 +140,11 @@ public class UserDetailViewTest {
 
   @Test
   public void be_able_to_change_avatar_when_already_set(FxRobot robot)
-      throws InterruptedException, URISyntaxException {
+      throws InterruptedException, URISyntaxException, MalformedURLException {
     File blueBox =
         Paths.get(this.getClass().getClassLoader().getResource("blue_box.png").toURI()).toFile();
     ImageView imageView = robot.lookup("#avatar_valerie").queryAs(ImageView.class);
-    when(fileChooser.showOpenDialog(any())).thenReturn(blueBox);
+    when(fileSystemService.openFile(any())).thenReturn(blueBox.toURI().toURL().toExternalForm());
     robot.clickOn(imageView);
     Thread.sleep(1000);
 

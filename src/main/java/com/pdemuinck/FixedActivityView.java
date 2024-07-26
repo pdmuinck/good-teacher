@@ -27,24 +27,23 @@ public class FixedActivityView extends VBox {
 
   private ActivityService activityService;
   private UserService userService;
+  private ClassroomController classroomController;
 
   public FixedActivityView(String name, String imageUrl, int spots, ActivityService activityService,
-                           UserService userService) {
+                           UserService userService, ClassroomController classroomController) {
     this.activityService = activityService;
     this.userService = userService;
+    this.classroomController = classroomController;
     this.name = name;
     Image image = new Image(getClass().getClassLoader().getResourceAsStream("icons/empty_box.png"));
-    this.spots = IntStream.range(0, spots).boxed().map(x -> prepareImageView(image)).collect(
+    this.spots = IntStream.range(0, spots).boxed().map(x -> prepareImageView(image, x)).collect(
         Collectors.toList());
     if (!imageUrl.isBlank()) {
       Image icon = null;
-      try {
-        icon = new Image(new FileInputStream(imageUrl), 150, 150, false, false);
-        ImageView activityImage = new ImageView(icon);
-        super.getChildren().add(activityImage);
-      } catch (FileNotFoundException e) {
-        throw new RuntimeException(e);
-      }
+      icon = new Image(imageUrl, 150, 150, false, false);
+      ImageView activityImage = new ImageView(icon);
+      activityImage.setId("image_for" + name);
+      super.getChildren().add(activityImage);
     }
     super.getChildren().add(fillSpotPane());
     super.getChildren().add(blackList());
@@ -55,16 +54,13 @@ public class FixedActivityView extends VBox {
     monochrome.setSaturation(-1);
     GridPane gridPane = new GridPane();
     List<ImageView> blackList =
-        activityService.fetchBlackList(this.name).stream().map(userService::fetchUserByName).filter(Optional::isPresent)
+        activityService.fetchBlackList(this.name).stream().map(userService::fetchUserByName)
+            .filter(Optional::isPresent)
             .map(Optional::get).map(u -> {
-              try {
-                ImageView imageView = new ImageView(
-                    new Image(new FileInputStream(u.getAvatar()), 55, 55, false, false));
-                imageView.setEffect(monochrome);
-                return imageView;
-              } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-              }
+              ImageView imageView = new ImageView(
+                  new Image(u.getAvatar(), 55, 55, false, false));
+              imageView.setEffect(monochrome);
+              return imageView;
             }).toList();
     for (int i = 0; i < blackList.size(); i += 3) {
       gridPane.add(blackList.get(i), 0, i, 1, 1);
@@ -89,9 +85,10 @@ public class FixedActivityView extends VBox {
     return gridPane;
   }
 
-  private ImageView prepareImageView(Image basic) {
+  private ImageView prepareImageView(Image basic, int x) {
     ImageView imageView1 = new ImageView(basic);
     imageView1.setUserData("icons/empty_box.png");
+    imageView1.setId(x + "_spot_for_" + name);
     imageView1.setOnDragDetected((MouseEvent event) -> {
       if (!imageView1.getUserData().equals("icons/empty_box.png")) {
         Dragboard db = imageView1.startDragAndDrop(TransferMode.ANY);
@@ -100,7 +97,7 @@ public class FixedActivityView extends VBox {
         content.putString((String) imageView1.getUserData());
         db.setContent(content);
         activityService.leaveActivity(this.name, (String) imageView1.getUserData());
-        Main.classroomController.updateActivityChange(
+        classroomController.updateActivityChange(
             String.format("%s left activity %s", imageView1.getUserData(), name));
         imageView1.setImage(basic);
         imageView1.setUserData("icons/empty_box.png");
@@ -125,12 +122,8 @@ public class FixedActivityView extends VBox {
         if (imageView1.getUserData().equals("icons/empty_box.png")) {
           Image image2 =
               null;
-          try {
-            image2 =
-                new Image(new FileInputStream(db.getString().split(",")[1]), 75, 75, false, false);
-          } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-          }
+          image2 =
+              new Image(db.getString().split(",")[1], 75, 75, false, false);
           imageView1.setImage(image2);
           imageView1.setPreserveRatio(true);
           imageView1.setUserData(db.getString());
@@ -139,8 +132,8 @@ public class FixedActivityView extends VBox {
                   u -> u.getName().equals(db.getString().split(",")[0]) &&
                       u.getAvatar().equals(db.getString().split(",")[1]))
               .findFirst().get().getName());
-          Main.classroomController.hideUser(db.getString().split(",")[0]);
-          Main.classroomController.updateActivityChange(
+          classroomController.hideUser(db.getString().split(",")[0]);
+          classroomController.updateActivityChange(
               String.format("%s joined activity %s", db.getString().split(",")[0],
                   db.getString().split(",")[1]));
         } else {

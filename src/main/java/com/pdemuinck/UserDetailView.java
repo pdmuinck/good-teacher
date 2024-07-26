@@ -22,14 +22,15 @@ import javafx.stage.FileChooser;
 public class UserDetailView extends Card {
 
   private UserService userService;
+  private FileSystemService fileSystemService;
 
   public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity,
                         UserService userService) {
-    this(name, avatar, timeByActivity, new FileChooser(), userService);
+    this(name, avatar, timeByActivity, new FileSystemService(), userService);
   }
 
   public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity,
-                        FileChooser fileChooser, UserService userService) {
+                        FileSystemService fileSystemService, UserService userService) {
     super();
     this.getStyleClass().add(Styles.ELEVATED_1);
     this.setMinWidth(500);
@@ -40,17 +41,15 @@ public class UserDetailView extends Card {
     ImageView avatarView = new ImageView();
     if (!avatar.isBlank()) {
       avatarView = new AvatarView(avatar, name);
+      avatarView.setId("avatar_" + name);
       avatarView.setOnMouseClicked((MouseEvent event) -> {
-        File selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
+        String selectedFile = fileSystemService.openFile(this.getScene().getWindow());
         if (selectedFile != null) {
-          try {
-            ImageView imageView =
-                new AvatarView(selectedFile.toURI().toURL().toExternalForm(), name);
-            this.setHeader(new Tile(name, "", imageView));
-            userService.addUser(name, imageView.getImage().getUrl());
-          } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-          }
+          ImageView imageView =
+              new AvatarView(selectedFile, name);
+          imageView.setId("avatar_" + name);
+          this.setHeader(new Tile(name, "", imageView));
+          userService.addUser(name, imageView.getImage().getUrl());
         }
       });
     }
@@ -58,28 +57,21 @@ public class UserDetailView extends Card {
     header1.setId(String.join("_", "user_detail_header", name));
 
     header1.setOnMouseClicked(e -> {
-      File selectedFile = fileChooser.showOpenDialog(this.getScene().getWindow());
+      String selectedFile = fileSystemService.openFile(this.getScene().getWindow());
       if (selectedFile != null) {
-        try {
-          ImageView view = new AvatarView(selectedFile.toURI().toURL().toExternalForm(), name);
-          view.setOnMouseClicked(x -> {
-            File file = fileChooser.showOpenDialog(this.getScene().getWindow());
-            if (file != null) {
-              try {
-                ImageView source = (ImageView) x.getSource();
-                loadNewImage((ImageView) x.getSource(), file);
-                this.setHeader(new Tile(name, "", source));
-                userService.addUser(name, source.getImage().getUrl());
-              } catch (MalformedURLException ex) {
-                throw new RuntimeException(ex);
-              }
-            }
-          });
-          this.setHeader(new Tile(name, "", view));
-          userService.addUser(name, view.getImage().getUrl());
-        } catch (MalformedURLException ex) {
-          throw new RuntimeException(ex);
-        }
+        ImageView view = new AvatarView(selectedFile, name);
+        view.setId("avatar_" + name);
+        view.setOnMouseClicked(x -> {
+          String file = fileSystemService.openFile(this.getScene().getWindow());
+          if (file != null) {
+            ImageView source = (ImageView) x.getSource();
+            loadNewImage((ImageView) x.getSource(), file);
+            this.setHeader(new Tile(name, "", source));
+            userService.addUser(name, source.getImage().getUrl());
+          }
+        });
+        this.setHeader(new Tile(name, "", view));
+        userService.addUser(name, view.getImage().getUrl());
       }
     });
     this.setHeader(header1);
@@ -102,9 +94,8 @@ public class UserDetailView extends Card {
     }
   }
 
-  private void loadNewImage(ImageView imageView, File selectedFile) throws MalformedURLException {
-    String externalForm = selectedFile.toURI().toURL().toExternalForm();
-    Image image = new Image(externalForm, 75, 75, false, false);
+  private void loadNewImage(ImageView imageView, String selectedFile) {
+    Image image = new Image(selectedFile, 75, 75, false, false);
     imageView.setImage(image);
   }
 }

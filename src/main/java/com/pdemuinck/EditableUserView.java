@@ -11,8 +11,8 @@ public class EditableUserView extends TitledPane {
   private String avatar;
   private String name;
 
-  public EditableUserView(String name, String avatar, Map<String, Optional<Long>> timeByActivity, UserService userService) {
-    super(name, new InputGroup(new UserDetailView(name, avatar, timeByActivity, userService)));
+  public EditableUserView(String name, String avatar, Map<String, Optional<Long>> timeByActivity, UserService userService, FileSystemService fileSystemService) {
+    super(name, new InputGroup(new UserDetailView(name, avatar, timeByActivity, fileSystemService, userService)));
     this.name = name;
     this.avatar = avatar;
     Label label = new Label(name);

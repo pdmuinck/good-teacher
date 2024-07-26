@@ -40,20 +40,29 @@ public class EditableActivityView extends VBox {
 
   private final FileSystemService fileSystemService;
 
+  private final ClassroomController classroomController;
+
+  private final UserService userService;
+
   private String imageUrl;
 
   public EditableActivityView(String name, String imageUrl, int spots,
                               ActivityService activityService,
-                              FileSystemService fileSystemService) {
+                              FileSystemService fileSystemService,
+                              ClassroomController classroomController,
+                              UserService userService) {
     this.activityService = activityService;
     this.fileSystemService = fileSystemService;
+    this.classroomController = classroomController;
+    this.userService = userService;
     this.name = name;
     this.imageUrl = imageUrl;
 
     Button cancel = new Button("", new FontIcon(Feather.X_CIRCLE));
+    cancel.setId("remove_activity_" + name);
     cancel.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.DANGER);
     cancel.setOnMouseClicked((MouseEvent event) -> {
-      Main.classroomController.removeActivity(this);
+      classroomController.removeActivity(this);
     });
 
     Button plus = new Button("", new FontIcon(Feather.PLUS));
@@ -117,45 +126,31 @@ public class EditableActivityView extends VBox {
         super.getChildren().add(blackList());
       }
     });
-    super.
+    super.getChildren().add(group);
 
-        getChildren().
-
-        add(group);
     if (!imageUrl.isBlank()) {
       Image icon = null;
-      try {
-        icon = new Image(new FileInputStream(imageUrl), 150, 150, false, false);
-        ImageView activityImage = new ImageView(icon);
-        activityImage.setOnMouseClicked((MouseEvent event) -> {
-          String file = fileSystemService.openFile(this.getScene().getWindow());
-          if (file != null) {
-            activityService.updateActivity(name, file,
-                this.spots.size());
-            this.imageUrl = file;
-            Image newIcon =
-                new Image(file, 150, 150,
-                    false, false);
-            activityImage.setImage(newIcon);
-          }
-        });
-        super.getChildren().add(activityImage);
-      } catch (FileNotFoundException e) {
-        throw new RuntimeException(e);
-      }
+      icon = new Image(imageUrl, 150, 150, false, false);
+      ImageView activityImage = new ImageView(icon);
+      activityImage.setId("image_for_" + name);
+      activityImage.setOnMouseClicked((MouseEvent event) -> {
+        String file = fileSystemService.openFile(this.getScene().getWindow());
+        if (file != null) {
+          activityService.updateActivity(name, file,
+              this.spots.size());
+          this.imageUrl = file;
+          Image newIcon =
+              new Image(file, 150, 150,
+                  false, false);
+          activityImage.setImage(newIcon);
+        }
+      });
+      super.getChildren().add(activityImage);
     } else {
       super.getChildren().add(new Label(name));
     }
-    super.
-
-        getChildren().
-
-        add(fillSpotPane());
-    super.
-
-        getChildren().
-
-        add(blackList());
+    super.getChildren().add(fillSpotPane());
+    super.getChildren().add(blackList());
   }
 
   private Card blackList() {
@@ -174,7 +169,7 @@ public class EditableActivityView extends VBox {
     tf2.setPromptText("Zoek persoon");
     tf2.setLeft(new FontIcon(Feather.SEARCH));
     tf2.setOnKeyReleased(e -> {
-      List<String> strings = Main.classroomController.fetchUsers(tf2.getText());
+      List<String> strings = classroomController.fetchUsers(tf2.getText());
       List<String> blackList = activityService.fetchBlackList(this.getName());
       var body2 = new VBox(10);
       card.setBody(body2);

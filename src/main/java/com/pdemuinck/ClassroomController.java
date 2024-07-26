@@ -98,13 +98,13 @@ public class ClassroomController implements Initializable {
     List<Activity> activities = activityService.fetchActivities();
     this.activityViews = activities.stream().filter(Activity::isShow).map(
         a -> new EditableActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(),
-            activityService, fileSystemService)).collect(
+            activityService, fileSystemService, this, userService)).collect(
         Collectors.toList());
     activitiesPane.setHgap(10);
     fillWithEditableActivities(this.activityViews);
     editableUserViews =
         userService.fetchUsers().stream().map(k -> new EditableUserView(k.getName(), k.getAvatar(),
-                activityService.timeByActivity(k.getName()), userService))
+                activityService.timeByActivity(k.getName()), userService, fileSystemService))
             .collect(
                 Collectors.toList());
     kids.getChildren()
@@ -227,7 +227,7 @@ public class ClassroomController implements Initializable {
       String text = newActivity.getText();
       Activity activity = activityService.addActivity(text);
       activityViews.add(new EditableActivityView(activity.getName(), activity.getImageUrl(),
-          activity.getMaxSpots(), activityService, fileSystemService));
+          activity.getMaxSpots(), activityService, fileSystemService, this, userService));
       fillWithEditableActivities(this.activityViews);
       newActivity.setText("");
     }
@@ -246,7 +246,7 @@ public class ClassroomController implements Initializable {
       newUser.setText("");
       Optional<User> user = userService.fetchUserByName(text);
       if (user.isEmpty()) {
-        editableUserViews.add(new EditableUserView(text, "", new HashMap<>(), userService));
+        editableUserViews.add(new EditableUserView(text, "", new HashMap<>(), userService, fileSystemService));
         userService.addUser(text, "");
       }
       kids.getChildren().clear();
@@ -273,7 +273,7 @@ public class ClassroomController implements Initializable {
       List<FixedActivityView> fixedActivityViewStream = activityService.fetchActivities().stream()
           .filter(Activity::isShow)
           .map(a -> new FixedActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(),
-              activityService, userService))
+              activityService, userService, this))
           .collect(
               Collectors.toList());
       fillWithFixedActivities(fixedActivityViewStream);
@@ -295,7 +295,7 @@ public class ClassroomController implements Initializable {
       newUser.setVisible(true);
       editableUserViews = userService.fetchUsers().stream()
           .map(k -> new EditableUserView(k.getName(), k.getAvatar(),
-              activityService.timeByActivity(k.getName()), userService)).collect(
+              activityService.timeByActivity(k.getName()), userService, fileSystemService)).collect(
               Collectors.toList());
       kids.getChildren().clear();
       kids.getChildren()
