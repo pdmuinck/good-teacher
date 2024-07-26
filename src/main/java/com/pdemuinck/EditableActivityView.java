@@ -8,6 +8,7 @@ import atlantafx.base.theme.Styles;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,23 +38,33 @@ public class EditableActivityView extends VBox {
 
   private final ActivityService activityService;
 
+  private final FileSystemService fileSystemService;
+
   private String imageUrl;
 
-  public EditableActivityView(String name, String imageUrl, int spots, ActivityService activityService) {
+  public EditableActivityView(String name, String imageUrl, int spots,
+                              ActivityService activityService,
+                              FileSystemService fileSystemService) {
     this.activityService = activityService;
+    this.fileSystemService = fileSystemService;
     this.name = name;
     this.imageUrl = imageUrl;
 
     Button cancel = new Button("", new FontIcon(Feather.X_CIRCLE));
     cancel.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.DANGER);
-    Button plus = new Button("", new FontIcon(Feather.PLUS));
-    cancel.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.SUCCESS);
-    Button minus = new Button("", new FontIcon(Feather.MINUS));
-    cancel.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.DANGER);
-    Button addImage = new Button("", new FontIcon(Feather.IMAGE));
     cancel.setOnMouseClicked((MouseEvent event) -> {
       Main.classroomController.removeActivity(this);
     });
+
+    Button plus = new Button("", new FontIcon(Feather.PLUS));
+    plus.setId(String.join("_", "add_spot_for", name));
+
+    Button minus = new Button("", new FontIcon(Feather.MINUS));
+    minus.setId(String.join("_", "remove_spot_for", name));
+
+    Button addImage = new Button("", new FontIcon(Feather.IMAGE));
+    addImage.setId("add_image_for_" + name);
+
     Image image = new Image(getClass().getClassLoader().getResourceAsStream("icons/empty_box.png"));
     this.spots = IntStream.range(0, spots).boxed().map(x -> addEmptyBox(image)).collect(
         Collectors.toList());
@@ -80,57 +91,52 @@ public class EditableActivityView extends VBox {
     });
 
     addImage.setOnMouseClicked((MouseEvent event) -> {
-      FileChooser fileChooser = new FileChooser();
-      File file = fileChooser.showOpenDialog(this.getScene().getWindow());
-      if(file != null){
-        activityService.updateActivity(name, file.getAbsolutePath(), this.spots.size());
-        this.imageUrl = file.getAbsolutePath();
-        try {
-          Image icon = new Image(new FileInputStream(file.getAbsolutePath()), 150, 150, false, false);
-          ImageView activityImage = new ImageView(icon);
-          activityImage.setOnMouseClicked((MouseEvent e) -> {
-            File newImage = fileChooser.showOpenDialog(this.getScene().getWindow());
-            if(newImage != null){
-              activityService.updateActivity(name, newImage.getAbsolutePath(), this.spots.size());
-              this.imageUrl = newImage.getAbsolutePath();
-              Image newIcon = null;
-              try {
-                newIcon =
-                    new Image(new FileInputStream(newImage.getAbsolutePath()), 150, 150, false, false);
-              } catch (FileNotFoundException ex) {
-                throw new RuntimeException(ex);
-              }
-              activityImage.setImage(newIcon);
-            }
-          });
-          super.getChildren().clear();
-          super.getChildren().add(group);
-          super.getChildren().add(activityImage);
-          super.getChildren().add(fillSpotPane());
-          super.getChildren().add(blackList());
-        } catch (FileNotFoundException e) {
-          throw new RuntimeException(e);
-        }
+      String file = fileSystemService.openFile(this.getScene().getWindow());
+      if (file != null) {
+        activityService.updateActivity(name, file, this.spots.size());
+        this.imageUrl = file;
+        Image icon = new Image(file, 150, 150, false, false);
+        ImageView activityImage = new ImageView(icon);
+        activityImage.setId("image_for_" + name);
+        activityImage.setOnMouseClicked((MouseEvent e) -> {
+          String newImage = fileSystemService.openFile(this.getScene().getWindow());
+          if (newImage != null) {
+            activityService.updateActivity(name, newImage, this.spots.size());
+            this.imageUrl = newImage;
+          }
+          Image newIcon = null;
+          newIcon =
+              new Image(newImage, 150,
+                  150, false, false);
+          activityImage.setImage(newIcon);
+        });
+        super.getChildren().clear();
+        super.getChildren().add(group);
+        super.getChildren().add(activityImage);
+        super.getChildren().add(fillSpotPane());
+        super.getChildren().add(blackList());
       }
     });
-    super.getChildren().add(group);
+    super.
+
+        getChildren().
+
+        add(group);
     if (!imageUrl.isBlank()) {
       Image icon = null;
       try {
         icon = new Image(new FileInputStream(imageUrl), 150, 150, false, false);
         ImageView activityImage = new ImageView(icon);
         activityImage.setOnMouseClicked((MouseEvent event) -> {
-          FileChooser fileChooser = new FileChooser();
-          File file = fileChooser.showOpenDialog(this.getScene().getWindow());
-          if(file != null){
-            activityService.updateActivity(name, file.getAbsolutePath(), this.spots.size());
-            this.imageUrl = file.getAbsolutePath();
-            try {
-              Image newIcon = new Image(new FileInputStream(file.getAbsolutePath()), 150, 150, false, false);
-              activityImage.setImage(newIcon);
-            } catch (FileNotFoundException e) {
-              throw new RuntimeException(e);
-            }
+          String file = fileSystemService.openFile(this.getScene().getWindow());
+          if (file != null) {
+            activityService.updateActivity(name, file,
+                this.spots.size());
+            this.imageUrl = file;
+            Image newIcon =
+                new Image(file, 150, 150,
+                    false, false);
+            activityImage.setImage(newIcon);
           }
         });
         super.getChildren().add(activityImage);
@@ -140,11 +146,19 @@ public class EditableActivityView extends VBox {
     } else {
       super.getChildren().add(new Label(name));
     }
-    super.getChildren().add(fillSpotPane());
-    super.getChildren().add(blackList());
+    super.
+
+        getChildren().
+
+        add(fillSpotPane());
+    super.
+
+        getChildren().
+
+        add(blackList());
   }
 
-  private Card blackList(){
+  private Card blackList() {
     var card = new Card();
     card.getStyleClass().add(Styles.ELEVATED_1);
     card.setMinWidth(300);
@@ -166,11 +180,11 @@ public class EditableActivityView extends VBox {
       card.setBody(body2);
       strings.stream().forEach(u -> {
         var cb = new CheckBox();
-        if(blackList.contains(u)){
+        if (blackList.contains(u)) {
           cb.setSelected(true);
         }
         cb.setOnMouseClicked(r -> {
-          if(cb.isSelected()){
+          if (cb.isSelected()) {
             this.activityService.addToBlackList(this.getName(), u);
           } else {
             this.activityService.removeFromBlackList(this.getName(), u);
@@ -194,7 +208,7 @@ public class EditableActivityView extends VBox {
       var cb = new CheckBox();
       cb.setSelected(true);
       cb.setOnMouseClicked(r -> {
-        if(cb.isSelected()){
+        if (cb.isSelected()) {
           this.activityService.addToBlackList(this.getName(), u);
         } else {
           this.activityService.removeFromBlackList(this.getName(), u);
@@ -212,6 +226,7 @@ public class EditableActivityView extends VBox {
 
   private GridPane fillSpotPane() {
     GridPane gridPane = new GridPane();
+    gridPane.setId("grid_for_" + this.getName());
     for (int i = 0; i < spots.size(); i += 4) {
       gridPane.add(this.spots.get(i), 0, i, 1, 1);
       if (i + 1 != spots.size()) {
@@ -227,7 +242,7 @@ public class EditableActivityView extends VBox {
     return gridPane;
   }
 
-  private Optional<ImageView> prepActivityImage(){
+  private Optional<ImageView> prepActivityImage() {
     if (!this.imageUrl.isBlank()) {
       Image icon = null;
       try {

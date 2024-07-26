@@ -34,7 +34,7 @@ public class Main extends Application {
     Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
     FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("activities.fxml"));
     DataStore dataStore = new FileDataStore();
-    ClassroomController controller = new ClassroomController(new ActivityMockService(dataStore), new UserMockService(dataStore));
+    ClassroomController controller = new ClassroomController(new ActivityMockService(dataStore), new UserMockService(dataStore), new FileSystemService());
     loader.setController(controller);
     Parent root = loader.load();
 

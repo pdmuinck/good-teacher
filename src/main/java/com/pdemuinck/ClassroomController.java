@@ -66,14 +66,16 @@ public class ClassroomController implements Initializable {
   private InputGroup activityButtons;
 
   private ActivityService activityService = new ActivityMockService(new FileDataStore());
+  private FileSystemService fileSystemService;
   private UserService userService = new UserMockService(new FileDataStore());
   List<FixedUserView> fixedUserViews = new ArrayList<>();
   List<EditableUserView> editableUserViews = new ArrayList<>();
   List<EditableActivityView> activityViews = new ArrayList<>();
 
-  public ClassroomController(ActivityService activityService, UserService userService){
+  public ClassroomController(ActivityService activityService, UserService userService, FileSystemService fileSystemService){
     this.activityService = activityService;
     this.userService = userService;
+    this.fileSystemService = fileSystemService;
   }
 
   @Override
@@ -96,7 +98,7 @@ public class ClassroomController implements Initializable {
     List<Activity> activities = activityService.fetchActivities();
     this.activityViews = activities.stream().filter(Activity::isShow).map(
         a -> new EditableActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(),
-            activityService)).collect(
+            activityService, fileSystemService)).collect(
         Collectors.toList());
     activitiesPane.setHgap(10);
     fillWithEditableActivities(this.activityViews);
@@ -225,7 +227,7 @@ public class ClassroomController implements Initializable {
       String text = newActivity.getText();
       Activity activity = activityService.addActivity(text);
       activityViews.add(new EditableActivityView(activity.getName(), activity.getImageUrl(),
-          activity.getMaxSpots(), activityService));
+          activity.getMaxSpots(), activityService, fileSystemService));
       fillWithEditableActivities(this.activityViews);
       newActivity.setText("");
     }
