@@ -115,45 +115,32 @@ public class ClassroomController implements Initializable {
       event.consume();
     });
     splitScreen.setOnDragDropped((DragEvent event) -> {
-      Dragboard db = event.getDragboard();
-      if (db.hasString()) {
-        String user = db.getString();
-        if (presentMode.isSelected()) {
-          this.fixedUserViews.stream().filter(u -> u.getAvatar().equals(user.split(",")[1]))
-              .findFirst()
-              .ifPresent(x -> x.setVisible(true));
-          kids.getChildren().clear();
-          kids.getChildren().addAll(this.fixedUserViews.stream().filter(Node::isVisible).collect(
-              Collectors.toList()));
-          event.setDropCompleted(true);
-        } else {
-          event.setDropCompleted(false);
-        }
-      } else {
-        event.setDropCompleted(false);
-      }
-      event.consume();
+      resetUserListInPresentMode(event);
     });
     kids.setOnDragDropped((DragEvent event) -> {
-      Dragboard db = event.getDragboard();
-      if (db.hasString()) {
-        String user = db.getString();
-        if (presentMode.isSelected()) {
-          this.fixedUserViews.stream().filter(u -> u.getAvatar().equals(user.split(",")[1]))
-              .findFirst()
-              .ifPresent(x -> x.setVisible(true));
-          kids.getChildren().clear();
-          kids.getChildren().addAll(this.fixedUserViews.stream().filter(Node::isVisible).collect(
-              Collectors.toList()));
-          event.setDropCompleted(true);
-        } else {
-          event.setDropCompleted(false);
-        }
+      resetUserListInPresentMode(event);
+    });
+  }
+
+  private void resetUserListInPresentMode(DragEvent event){
+    Dragboard db = event.getDragboard();
+    if (db.hasString()) {
+      String user = db.getString();
+      if (presentMode.isSelected()) {
+        this.fixedUserViews.stream().filter(u -> u.getAvatar().equals(user.split(",")[1]))
+            .findFirst()
+            .ifPresent(x -> x.setVisible(true));
+        kids.getChildren().clear();
+        kids.getChildren().addAll(this.fixedUserViews.stream().filter(Node::isVisible).collect(
+            Collectors.toList()));
+        event.setDropCompleted(true);
       } else {
         event.setDropCompleted(false);
       }
-      event.consume();
-    });
+    } else {
+      event.setDropCompleted(false);
+    }
+    event.consume();
   }
 
   private void fillWithEditableActivities(List<EditableActivityView> activities) {
@@ -200,11 +187,6 @@ public class ClassroomController implements Initializable {
   @FXML
   public void startAllActivities(MouseEvent event) {
     activityService.startAllActivities();
-    updateActivityChange("All activities got started");
-  }
-
-  public void updateActivityChange(String change) {
-//    this.changelog.setText(String.join("\n", this.changelog.getText(), change));
   }
 
   @FXML
@@ -308,7 +290,6 @@ public class ClassroomController implements Initializable {
 
   public void pauseAllActivities(MouseEvent actionEvent) {
     activityService.pauseAllActivities();
-    updateActivityChange("All activities got paused");
   }
 
   public void hideUser(String name) {

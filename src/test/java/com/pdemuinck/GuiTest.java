@@ -310,6 +310,16 @@ public class GuiTest {
   }
 
   @Test
+  public void resets_user_in_list_when_dropped_in_user_split_screen(FxRobot robot){
+    addUser(robot, "charlie", "batman.png");
+    addActivity(robot, "drawing", "red_box.png");
+    switchToPresentMode(robot);
+    robot.drag("#avatar_charlie").dropTo("#splitScreen");
+    VBox users = robot.lookup("#kids").queryAs(VBox.class);
+    assertThat(users.getChildren().get(0).isVisible()).isTrue();
+  }
+
+  @Test
   public void resets_user_in_list_when_dropped_on_another_user(FxRobot robot){
     addUser(robot, "charlie", "batman.png");
     addUser(robot, "maxine", "red_box.png");
@@ -414,6 +424,22 @@ public class GuiTest {
 
     ImageView firstSpot = robot.lookup("#0_spot_for_painting").queryAs(ImageView.class);
     assertThat(firstSpot.getImage().getUrl()).contains("batman.png");
+  }
+
+  @Test
+  public void starts_all_activities_in_present_mode(FxRobot robot){
+    addActivity(robot, "drawing");
+    switchToPresentMode(robot);
+    robot.clickOn("#playActivities");
+    verify(activityService, times(1)).startAllActivities();
+  }
+
+  @Test
+  public void pauses_all_activities_in_present_mode(FxRobot robot){
+    addActivity(robot, "drawing");
+    switchToPresentMode(robot);
+    robot.clickOn("#pauseActivities");
+    verify(activityService, times(1)).pauseAllActivities();
   }
 
   private void removeActivity(FxRobot robot, String activityName) {

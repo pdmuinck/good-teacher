@@ -132,9 +132,6 @@ public class FixedActivityView extends VBox {
                       u.getAvatar().equals(db.getString().split(",")[1]))
               .findFirst().get().getName());
           classroomController.hideUser(db.getString().split(",")[0]);
-          classroomController.updateActivityChange(
-              String.format("%s joined activity %s", db.getString().split(",")[0],
-                  db.getString().split(",")[1]));
         } else {
           event.setDropCompleted(false);
         }
