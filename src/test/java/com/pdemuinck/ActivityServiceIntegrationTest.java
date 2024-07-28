@@ -85,4 +85,13 @@ public class ActivityServiceIntegrationTest {
     assertThat(timeReportForCharlie.get(timeReportForCharlie.size() - 1).getTime()).isCloseTo(1000L,
         Offset.offset(3L));
   }
+
+  @Test
+  public void adds_to_black_list(){
+    DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
+    ActivityService activityService = new ActivityMockService(dataStore);
+    activityService.addToBlackList("drawing", "charlie");
+    List<String> strings = activityService.fetchBlackList("drawing");
+    assertThat(strings).containsOnly("charlie");
+  }
 }
