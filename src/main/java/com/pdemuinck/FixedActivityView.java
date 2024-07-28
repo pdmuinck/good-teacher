@@ -53,6 +53,7 @@ public class FixedActivityView extends VBox {
     ColorAdjust monochrome = new ColorAdjust();
     monochrome.setSaturation(-1);
     GridPane gridPane = new GridPane();
+    gridPane.setId("blacklist_for_" + this.name);
     List<ImageView> blackList =
         activityService.fetchBlackList(this.name).stream().map(userService::fetchUserByName)
             .filter(Optional::isPresent)
@@ -97,8 +98,6 @@ public class FixedActivityView extends VBox {
         content.putString((String) imageView1.getUserData());
         db.setContent(content);
         activityService.leaveActivity(this.name, (String) imageView1.getUserData());
-        classroomController.updateActivityChange(
-            String.format("%s left activity %s", imageView1.getUserData(), name));
         imageView1.setImage(basic);
         imageView1.setUserData("icons/empty_box.png");
       }

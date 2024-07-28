@@ -1,8 +1,9 @@
 package com.pdemuinck;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -18,20 +19,19 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.control.CheckBox;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.assertj.core.api.AssertionsForClassTypes;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -47,11 +47,13 @@ public class GuiTest {
   FileSystemService fileSystemService = Mockito.mock(FileSystemService.class);
   List<Activity> activities = new ArrayList<>();
   List<User> users = new ArrayList<>();
+  List<String> blackList = new ArrayList<>();
 
 
   @Start
   private void start(Stage stage) throws URISyntaxException, IOException {
     when(activityService.fetchActivities()).thenReturn(activities);
+    when(activityService.fetchBlackList(anyString())).thenReturn(blackList);
     when(userService.fetchUsers()).thenReturn(users);
     FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("activities.fxml"));
     ClassroomController controller =
@@ -289,27 +291,129 @@ public class GuiTest {
 
   @Test
   public void resets_user_in_list_when_dropped_outside_an_activity(FxRobot robot){
-
+    addUser(robot, "charlie", "batman.png");
+    addActivity(robot, "drawing", "red_box.png");
+    switchToPresentMode(robot);
+    robot.drag("#avatar_charlie").dropTo("#activities");
+    VBox users = robot.lookup("#kids").queryAs(VBox.class);
+    assertThat(users.getChildren().get(0).isVisible()).isTrue();
   }
 
   @Test
   public void resets_user_in_list_when_dropped_in_user_left_pane(FxRobot robot){
-
+    addUser(robot, "charlie", "batman.png");
+    addActivity(robot, "drawing", "red_box.png");
+    switchToPresentMode(robot);
+    robot.drag("#avatar_charlie").dropTo("#kids");
+    VBox users = robot.lookup("#kids").queryAs(VBox.class);
+    assertThat(users.getChildren().get(0).isVisible()).isTrue();
   }
 
   @Test
   public void resets_user_in_list_when_dropped_on_another_user(FxRobot robot){
-
+    addUser(robot, "charlie", "batman.png");
+    addUser(robot, "maxine", "red_box.png");
+    switchToPresentMode(robot);
+    robot.drag("#avatar_charlie").dropTo("#avatar_maxine");
+    VBox users = robot.lookup("#kids").queryAs(VBox.class);
+    assertThat(users.getChildren().get(0).isVisible()).isTrue();
   }
 
   @Test
   public void shows_black_list_for_each_activity_in_edit_mode(FxRobot robot){
+    registerBlackList("drawing", "charlie");
+    addActivity(robot, "drawing");
+    VBox blackList = robot.lookup("#blacklist_for_drawing").queryAs(VBox.class);
+    assertThat(blackList.getChildren()).hasSize(1);
+  }
 
+  @Test
+  public void shows_users_for_blacklist_search(FxRobot robot){
+    addActivity(robot, "drawing");
+    addUser(robot, "charlie");
+    robot.clickOn("#blacklist_search_for_drawing").write("charlie");
+    CheckBox checkBox = robot.lookup("#user_for_blacklist_charlie").queryAs(CheckBox.class);
+    assertThat(checkBox.isVisible()).isTrue();
+  }
+
+  @Test
+  public void shows_selected_users_for_blacklist_search(FxRobot robot){
+    registerBlackList("drawing", "charlie");
+    addActivity(robot, "drawing");
+    addUser(robot, "charlie");
+    robot.clickOn("#blacklist_search_for_drawing").write("charlie");
+    CheckBox checkBox = robot.lookup("#user_for_blacklist_charlie").queryAs(CheckBox.class);
+    assertThat(checkBox.isSelected()).isTrue();
+  }
+
+  @Test
+  public void shows_selected_users_for_blacklist_by_default(FxRobot robot){
+    registerBlackList("drawing", "charlie");
+    addActivity(robot, "drawing");
+    addUser(robot, "charlie");
+    CheckBox checkBox = robot.lookup("#user_for_blacklist_charlie").queryAs(CheckBox.class);
+    assertThat(checkBox.isSelected()).isTrue();
+  }
+
+  @Test
+  public void saves_user_added_to_blacklist(FxRobot robot){
+    addUser(robot, "charlie");
+    addActivity(robot, "drawing");
+    robot.clickOn("#blacklist_search_for_drawing").write("charlie");
+    robot.clickOn("#user_for_blacklist_charlie");
+    verify(activityService, times(1)).addToBlackList("drawing", "charlie");
+  }
+
+  @Test
+  public void adds_user_to_activity_blacklist(FxRobot robot){
+    addUser(robot, "charlie");
+    addActivity(robot, "drawing");
+    robot.clickOn("#blacklist_search_for_drawing").write("charlie");
+    robot.clickOn("#user_for_blacklist_charlie");
+    CheckBox checkBox = robot.lookup("#user_for_blacklist_charlie").queryAs(CheckBox.class);
+    assertThat(checkBox.isSelected()).isTrue();
+  }
+
+  @Test
+  public void removes_user_from_blacklist(FxRobot robot){
+    registerBlackList("drawing", "charlie");
+    addUser(robot, "charlie");
+    addActivity(robot, "drawing");
+    removeFromBlackList(robot, "drawing", "charlie");
+    CheckBox checkBox = robot.lookup("#user_for_blacklist_charlie").queryAs(CheckBox.class);
+    assertThat(checkBox.isSelected()).isFalse();
+  }
+
+  @Test
+  public void saves_removal_from_blacklist(FxRobot robot){
+    registerBlackList("drawing", "charlie");
+    addUser(robot, "charlie");
+    addActivity(robot, "drawing");
+    removeFromBlackList(robot, "drawing", "charlie");
+    verify(activityService, times(1)).removeFromBlackList("drawing", "charlie");
   }
 
   @Test
   public void shows_black_list_for_each_activity_in_present_mode(FxRobot robot){
+    registerBlackList("drawing", "charlie");
+    addActivity(robot, "drawing", "batman.png");
+    addUser(robot, "charlie", "batman.png");
+    switchToPresentMode(robot);
+    GridPane blackList = robot.lookup("#blacklist_for_drawing").queryAs(GridPane.class);
+    assertThat(blackList.getChildren()).hasSize(1);
+  }
 
+  @Test
+  public void drag_user_from_activity_to_activity_in_present_mode(FxRobot robot){
+    addActivity(robot, "drawing");
+    addActivity(robot, "painting");
+    addUser(robot, "charlie", "batman.png");
+    switchToPresentMode(robot);
+    robot.drag("#avatar_charlie").dropTo("#0_spot_for_drawing");
+    robot.drag("#0_spot_for_drawing").dropTo("#0_spot_for_painting");
+
+    ImageView firstSpot = robot.lookup("#0_spot_for_painting").queryAs(ImageView.class);
+    assertThat(firstSpot.getImage().getUrl()).contains("batman.png");
   }
 
   private void removeActivity(FxRobot robot, String activityName) {
@@ -400,12 +504,23 @@ public class GuiTest {
       File file =
           Paths.get(this.getClass().getClassLoader().getResource(avatar).toURI()).toFile();
       when(fileSystemService.openFile(any())).thenReturn(file.toURI().toURL().toExternalForm());
-      users.add(new User(name, file.toURI().toURL().toExternalForm()));
+      User user = new User(name, file.toURI().toURL().toExternalForm());
+      when(userService.fetchUserByName(name)).thenReturn(Optional.of(user));
+      users.add(user);
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     } catch (MalformedURLException e) {
       throw new RuntimeException(e);
     }
     robot.clickOn("#user_detail_header_" + name);
+  }
+
+  private void registerBlackList(String activityName, String user){
+    blackList.add(user);
+  }
+
+  private void removeFromBlackList(FxRobot robot, String activity, String user){
+    robot.clickOn("#blacklist_search_for_" + activity).write(user);
+    robot.clickOn("#user_for_blacklist_charlie");
   }
 }

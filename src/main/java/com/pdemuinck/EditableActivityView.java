@@ -166,6 +166,7 @@ public class EditableActivityView extends VBox {
     card.setHeader(header2);
 
     var tf2 = new CustomTextField();
+    tf2.setId("blacklist_search_for_" + name);
     tf2.setPromptText("Zoek persoon");
     tf2.setLeft(new FontIcon(Feather.SEARCH));
     tf2.setOnKeyReleased(e -> {
@@ -175,6 +176,7 @@ public class EditableActivityView extends VBox {
       card.setBody(body2);
       strings.stream().forEach(u -> {
         var cb = new CheckBox();
+        cb.setId("user_for_blacklist_" + u);
         if (blackList.contains(u)) {
           cb.setSelected(true);
         }
@@ -197,10 +199,12 @@ public class EditableActivityView extends VBox {
     card.setSubHeader(tf2);
 
     var body2 = new VBox(10);
+    body2.setId("blacklist_for_" + name);
     card.setBody(body2);
     List<String> strings = activityService.fetchBlackList(this.getName());
     strings.stream().forEach(u -> {
       var cb = new CheckBox();
+      cb.setId("user_for_blacklist_" + u);
       cb.setSelected(true);
       cb.setOnMouseClicked(r -> {
         if (cb.isSelected()) {
