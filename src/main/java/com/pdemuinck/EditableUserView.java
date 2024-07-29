@@ -19,10 +19,6 @@ public class EditableUserView extends TitledPane {
     super.getChildren().add(label);
   }
 
-  public String getAvatar() {
-    return avatar;
-  }
-
   public String getName() {
     return name;
   }

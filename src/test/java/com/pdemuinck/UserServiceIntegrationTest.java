@@ -40,5 +40,15 @@ public class UserServiceIntegrationTest {
     assertThat(user).isPresent();
   }
 
+  @Test
+  public void updates_existing_user(){
+    DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
+    UserService userService = new UserMockService(dataStore);
+    userService.addUser("charlie", "avatar");
+    userService.addUser("charlie", "avatar1");
+    Optional<User> user = userService.fetchUserByName("charlie");
+    assertThat(user.get().getAvatar()).isEqualTo("avatar1");
+  }
+
 
 }

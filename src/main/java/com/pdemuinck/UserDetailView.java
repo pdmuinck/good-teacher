@@ -4,10 +4,6 @@ import atlantafx.base.controls.Card;
 import atlantafx.base.controls.Tile;
 import atlantafx.base.theme.Styles;
 import com.pdemuinck.views.AvatarView;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.Optional;
 import javafx.collections.FXCollections;
@@ -17,17 +13,8 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.stage.FileChooser;
 
 public class UserDetailView extends Card {
-
-  private UserService userService;
-  private FileSystemService fileSystemService;
-
-  public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity,
-                        UserService userService) {
-    this(name, avatar, timeByActivity, new FileSystemService(), userService);
-  }
 
   public UserDetailView(String name, String avatar, Map<String, Optional<Long>> timeByActivity,
                         FileSystemService fileSystemService, UserService userService) {

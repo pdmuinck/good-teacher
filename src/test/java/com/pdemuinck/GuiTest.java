@@ -18,7 +18,9 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javafx.fxml.FXMLLoader;
@@ -48,12 +50,16 @@ public class GuiTest {
   List<Activity> activities = new ArrayList<>();
   List<User> users = new ArrayList<>();
   List<String> blackList = new ArrayList<>();
+  Map<String, List<String>> activityBlackLists = new HashMap<>();
 
 
   @Start
   private void start(Stage stage) throws URISyntaxException, IOException {
+    activityBlackLists.put("drawing", new ArrayList<>());
+    activityBlackLists.put("painting", new ArrayList<>());
     when(activityService.fetchActivities()).thenReturn(activities);
-    when(activityService.fetchBlackList(anyString())).thenReturn(blackList);
+    when(activityService.fetchBlackList("drawing")).thenReturn(activityBlackLists.get("drawing"));
+    when(activityService.fetchBlackList("painting")).thenReturn(activityBlackLists.get("painting"));
     when(userService.fetchUsers()).thenReturn(users);
     FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("activities.fxml"));
     ClassroomController controller =
@@ -228,11 +234,12 @@ public class GuiTest {
   }
 
   @Test
-  public void updates_activity_when_image_changes(FxRobot robot){
+  public void updates_activity_when_image_changes(FxRobot robot) {
     addActivity(robot, "drawing", 2);
     addActivityImage(robot, "drawing", "blue_box.png");
     changeActivityImage(robot, "drawing", "red_box.png");
-    verify(activityService, times(1)).updateActivity(eq("drawing"), contains("blue_box.png"), eq(2));
+    verify(activityService, times(1)).updateActivity(eq("drawing"), contains("blue_box.png"),
+        eq(2));
     verify(activityService, times(1)).updateActivity(eq("drawing"), contains("red_box.png"), eq(2));
   }
 
@@ -251,14 +258,14 @@ public class GuiTest {
   }
 
   @Test
-  public void hides_activity_when_removed_from_grid(FxRobot robot){
+  public void hides_activity_when_removed_from_grid(FxRobot robot) {
     addActivity(robot, "drawing", "blue_box.png");
     removeActivity(robot, "drawing");
     assertThat(robot.lookup("#activitiesPane").queryAs(GridPane.class).getChildren()).hasSize(0);
   }
 
   @Test
-  public void drags_user_to_activity(FxRobot robot){
+  public void drags_user_to_activity(FxRobot robot) {
     addUser(robot, "charlie", "batman.png");
     addActivity(robot, "drawing");
     switchToPresentMode(robot);
@@ -269,7 +276,7 @@ public class GuiTest {
   }
 
   @Test
-  public void hides_user_from_user_list_when_dropped_to_an_activity(FxRobot robot){
+  public void hides_user_from_user_list_when_dropped_to_an_activity(FxRobot robot) {
     addUser(robot, "charlie", "batman.png");
     addActivity(robot, "drawing");
     switchToPresentMode(robot);
@@ -279,7 +286,7 @@ public class GuiTest {
   }
 
   @Test
-  public void shows_activity_image_in_present_mode(FxRobot robot){
+  public void shows_activity_image_in_present_mode(FxRobot robot) {
     addActivity(robot, "drawing", "blue_box.png");
     switchToPresentMode(robot);
     FixedActivityView fixedActivityView =
@@ -290,7 +297,7 @@ public class GuiTest {
   }
 
   @Test
-  public void resets_user_in_list_when_dropped_outside_an_activity(FxRobot robot){
+  public void resets_user_in_list_when_dropped_outside_an_activity(FxRobot robot) {
     addUser(robot, "charlie", "batman.png");
     addActivity(robot, "drawing", "red_box.png");
     switchToPresentMode(robot);
@@ -300,7 +307,7 @@ public class GuiTest {
   }
 
   @Test
-  public void resets_user_in_list_when_dropped_in_user_left_pane(FxRobot robot){
+  public void resets_user_in_list_when_dropped_in_user_left_pane(FxRobot robot) {
     addUser(robot, "charlie", "batman.png");
     addActivity(robot, "drawing", "red_box.png");
     switchToPresentMode(robot);
@@ -310,7 +317,7 @@ public class GuiTest {
   }
 
   @Test
-  public void resets_user_in_list_when_dropped_in_user_split_screen(FxRobot robot){
+  public void resets_user_in_list_when_dropped_in_user_split_screen(FxRobot robot) {
     addUser(robot, "charlie", "batman.png");
     addActivity(robot, "drawing", "red_box.png");
     switchToPresentMode(robot);
@@ -320,7 +327,7 @@ public class GuiTest {
   }
 
   @Test
-  public void resets_user_in_list_when_dropped_on_another_user(FxRobot robot){
+  public void resets_user_in_list_when_dropped_on_another_user(FxRobot robot) {
     addUser(robot, "charlie", "batman.png");
     addUser(robot, "maxine", "red_box.png");
     switchToPresentMode(robot);
@@ -330,7 +337,7 @@ public class GuiTest {
   }
 
   @Test
-  public void shows_black_list_for_each_activity_in_edit_mode(FxRobot robot){
+  public void shows_black_list_for_each_activity_in_edit_mode(FxRobot robot) {
     registerBlackList("drawing", "charlie");
     addActivity(robot, "drawing");
     VBox blackList = robot.lookup("#blacklist_for_drawing").queryAs(VBox.class);
@@ -338,7 +345,7 @@ public class GuiTest {
   }
 
   @Test
-  public void shows_users_for_blacklist_search(FxRobot robot){
+  public void shows_users_for_blacklist_search(FxRobot robot) {
     addActivity(robot, "drawing");
     addUser(robot, "charlie");
     robot.clickOn("#blacklist_search_for_drawing").write("charlie");
@@ -347,7 +354,7 @@ public class GuiTest {
   }
 
   @Test
-  public void shows_selected_users_for_blacklist_search(FxRobot robot){
+  public void shows_selected_users_for_blacklist_search(FxRobot robot) {
     registerBlackList("drawing", "charlie");
     addActivity(robot, "drawing");
     addUser(robot, "charlie");
@@ -357,7 +364,7 @@ public class GuiTest {
   }
 
   @Test
-  public void shows_selected_users_for_blacklist_by_default(FxRobot robot){
+  public void shows_selected_users_for_blacklist_by_default(FxRobot robot) {
     registerBlackList("drawing", "charlie");
     addActivity(robot, "drawing");
     addUser(robot, "charlie");
@@ -366,7 +373,7 @@ public class GuiTest {
   }
 
   @Test
-  public void saves_user_added_to_blacklist(FxRobot robot){
+  public void saves_user_added_to_blacklist(FxRobot robot) {
     addUser(robot, "charlie");
     addActivity(robot, "drawing");
     robot.clickOn("#blacklist_search_for_drawing").write("charlie");
@@ -375,7 +382,7 @@ public class GuiTest {
   }
 
   @Test
-  public void adds_user_to_activity_blacklist(FxRobot robot){
+  public void adds_user_to_activity_blacklist(FxRobot robot) {
     addUser(robot, "charlie");
     addActivity(robot, "drawing");
     robot.clickOn("#blacklist_search_for_drawing").write("charlie");
@@ -385,7 +392,7 @@ public class GuiTest {
   }
 
   @Test
-  public void removes_user_from_blacklist(FxRobot robot){
+  public void removes_user_from_blacklist(FxRobot robot) {
     registerBlackList("drawing", "charlie");
     addUser(robot, "charlie");
     addActivity(robot, "drawing");
@@ -395,7 +402,7 @@ public class GuiTest {
   }
 
   @Test
-  public void saves_removal_from_blacklist(FxRobot robot){
+  public void saves_removal_from_blacklist(FxRobot robot) {
     registerBlackList("drawing", "charlie");
     addUser(robot, "charlie");
     addActivity(robot, "drawing");
@@ -404,7 +411,7 @@ public class GuiTest {
   }
 
   @Test
-  public void shows_black_list_for_each_activity_in_present_mode(FxRobot robot){
+  public void shows_black_list_for_each_activity_in_present_mode(FxRobot robot) {
     registerBlackList("drawing", "charlie");
     addActivity(robot, "drawing", "batman.png");
     addUser(robot, "charlie", "batman.png");
@@ -414,7 +421,7 @@ public class GuiTest {
   }
 
   @Test
-  public void drag_user_from_activity_to_activity_in_present_mode(FxRobot robot){
+  public void drag_user_from_activity_to_activity_in_present_mode(FxRobot robot) {
     addActivity(robot, "drawing");
     addActivity(robot, "painting");
     addUser(robot, "charlie", "batman.png");
@@ -427,7 +434,7 @@ public class GuiTest {
   }
 
   @Test
-  public void starts_all_activities_in_present_mode(FxRobot robot){
+  public void starts_all_activities_in_present_mode(FxRobot robot) {
     addActivity(robot, "drawing");
     switchToPresentMode(robot);
     robot.clickOn("#playActivities");
@@ -435,17 +442,44 @@ public class GuiTest {
   }
 
   @Test
-  public void pauses_all_activities_in_present_mode(FxRobot robot){
+  public void pauses_all_activities_in_present_mode(FxRobot robot) {
     addActivity(robot, "drawing");
     switchToPresentMode(robot);
     robot.clickOn("#pauseActivities");
     verify(activityService, times(1)).pauseAllActivities();
   }
 
+  @Test
+  public void changing_number_of_spots_to_activity_with_image_retains_the_image(FxRobot robot) {
+    addActivity(robot, "drawing", "batman.png");
+    addActivitySpot(robot, "drawing");
+    removeActivitySpot(robot, "drawing");
+    assertThat(
+        robot.lookup("#image_for_drawing").queryAs(ImageView.class).getImage().getUrl()).contains(
+        "batman.png");
+  }
+
+  @Test
+  public void add_user_to_black_list_only_for_that_activity(FxRobot robot) {
+    registerBlackList("drawing", "charlie");
+    registerBlackList("painting", "maxine");
+    addActivity(robot, "drawing");
+    addActivity(robot, "painting");
+    addUser(robot, "charlie");
+    addUser(robot, "maxine");
+    addUser(robot, "otto");
+    addToBlackList(robot, "drawing", "otto");
+    GridPane blackListDrawing = robot.lookup("#blacklist_for_drawing").queryAs(GridPane.class);
+    GridPane blackListPainting = robot.lookup("#blacklist_for_painting").queryAs(GridPane.class);
+    assertThat(blackListDrawing.getChildren()).hasSize(2);
+    assertThat(blackListPainting.getChildren()).hasSize(1);
+  }
+
   private void removeActivity(FxRobot robot, String activityName) {
     robot.clickOn("#remove_activity_" + activityName);
     activities = activities.stream().filter(a -> !a.getName().equals(activityName)).collect(
-        Collectors.toList());;
+        Collectors.toList());
+    ;
   }
 
   private void changeActivityImage(FxRobot robot, String activityName, String image) {
@@ -519,12 +553,12 @@ public class GuiTest {
     robot.clickOn("#remove_spot_for_" + name);
   }
 
-  private void addUser(FxRobot robot, String name){
+  private void addUser(FxRobot robot, String name) {
     robot.clickOn("#newUser").write(name).push(KeyCode.ENTER);
     users.add(new User(name, ""));
   }
 
-  private void addUser(FxRobot robot, String name, String avatar){
+  private void addUser(FxRobot robot, String name, String avatar) {
     robot.clickOn("#newUser").write(name).push(KeyCode.ENTER);
     try {
       File file =
@@ -541,12 +575,19 @@ public class GuiTest {
     robot.clickOn("#user_detail_header_" + name);
   }
 
-  private void registerBlackList(String activityName, String user){
-    blackList.add(user);
+  private void registerBlackList(String activityName, String user) {
+    activityBlackLists.get(activityName).add(user);
   }
 
-  private void removeFromBlackList(FxRobot robot, String activity, String user){
+  private void removeFromBlackList(FxRobot robot, String activity, String user) {
     robot.clickOn("#blacklist_search_for_" + activity).write(user);
-    robot.clickOn("#user_for_blacklist_charlie");
+    robot.clickOn("#user_for_blacklist_" + user);
+    activityBlackLists.get(activity).remove(user);
+  }
+
+  private void addToBlackList(FxRobot robot, String activity, String user) {
+    robot.clickOn("#blacklist_search_for_" + activity).write(user);
+    robot.clickOn("#user_for_blacklist_" + user);
+    activityBlackLists.get(activity).add(user);
   }
 }

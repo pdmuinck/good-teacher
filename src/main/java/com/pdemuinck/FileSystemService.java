@@ -1,6 +1,5 @@
 package com.pdemuinck;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;

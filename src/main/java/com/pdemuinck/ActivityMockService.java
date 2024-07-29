@@ -138,8 +138,7 @@ public class ActivityMockService implements ActivityService {
   @Override
   public Activity addActivity(String name, String imageUrl, int spots) {
     Activity activity = new Activity(name, imageUrl, spots);
-    addActivity(activity);
-    return activity;
+    return addActivity(activity);
   }
 
   private Optional<Activity> showActivity(String name) {

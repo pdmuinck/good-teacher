@@ -3,6 +3,7 @@ package com.pdemuinck;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,24 @@ public class ActivityServiceIntegrationTest {
 
   @TempDir
   File tempDir;
+
+  @Test
+  public void shows_activity_if_already_exists(){
+    DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
+    ActivityService activityService = new ActivityMockService(dataStore);
+    activityService.addActivity("drawing", "image", 4);
+    Activity activity = activityService.addActivity("drawing", "", 4);
+    assertThat(activity).isEqualTo(new Activity("drawing", "image", 4));
+  }
+
+  @Test
+  public void creates_activities_file_if_does_not_exist_yet_when_trying_to_fetch_activities(){
+    DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
+    ActivityService activityService = new ActivityMockService(dataStore);
+    activityService.fetchActivities();
+    File[] files = tempDir.listFiles();
+    assertThat(files).anyMatch(file -> file.getName().equals("activities.csv"));
+  }
 
   @Test
   public void creates_activities_file_if_does_not_exist_yet_when_trying_to_add_an_activity() {
@@ -91,6 +110,27 @@ public class ActivityServiceIntegrationTest {
     DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
     ActivityService activityService = new ActivityMockService(dataStore);
     activityService.addToBlackList("drawing", "charlie");
+    List<String> strings = activityService.fetchBlackList("drawing");
+    assertThat(strings).containsOnly("charlie");
+  }
+
+  @Test
+  public void removes_from_black_list(){
+    DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
+    ActivityService activityService = new ActivityMockService(dataStore);
+    activityService.addToBlackList("drawing", "charlie");
+    activityService.addToBlackList("drawing", "otto");
+    activityService.removeFromBlackList("drawing", "otto");
+    List<String> strings = activityService.fetchBlackList("drawing");
+    assertThat(strings).containsOnly("charlie");
+  }
+
+  @Test
+  public void ignores_when_removing_user_from_black_list_who_is_not_on_black_list(){
+    DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
+    ActivityService activityService = new ActivityMockService(dataStore);
+    activityService.addToBlackList("drawing", "charlie");
+    activityService.removeFromBlackList("drawing", "otto");
     List<String> strings = activityService.fetchBlackList("drawing");
     assertThat(strings).containsOnly("charlie");
   }

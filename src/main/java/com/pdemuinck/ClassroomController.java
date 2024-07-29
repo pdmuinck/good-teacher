@@ -236,14 +236,6 @@ public class ClassroomController implements Initializable {
     }
   }
 
-  public void saveUser(String name, String avatar) {
-    userService.addUser(name, avatar);
-  }
-
-  public void saveUsers() {
-    this.editableUserViews.forEach(uv -> userService.addUser(uv.getName(), uv.getAvatar()));
-  }
-
   public List<String> fetchUsers(String search) {
     return this.editableUserViews.stream().map(EditableUserView::getName)
         .filter(u -> u.contains(search)).collect(Collectors.toList());

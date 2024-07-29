@@ -1,8 +1,5 @@
 package com.pdemuinck.views;
 
-import java.awt.event.MouseEvent;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 

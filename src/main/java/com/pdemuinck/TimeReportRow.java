@@ -25,10 +25,6 @@ public class TimeReportRow {
     return activityName;
   }
 
-  public LocalDate getActivityDate() {
-    return activityDate;
-  }
-
   public long getTime() {
     return time;
   }

@@ -5,10 +5,8 @@ import atlantafx.base.controls.CustomTextField;
 import atlantafx.base.controls.Tile;
 import atlantafx.base.layout.InputGroup;
 import atlantafx.base.theme.Styles;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,7 +23,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.stage.FileChooser;
 import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -136,8 +133,7 @@ public class EditableActivityView extends VBox {
       activityImage.setOnMouseClicked((MouseEvent event) -> {
         String file = fileSystemService.openFile(this.getScene().getWindow());
         if (file != null) {
-          activityService.updateActivity(name, file,
-              this.spots.size());
+          activityService.updateActivity(name, file, this.spots.size());
           this.imageUrl = file;
           Image newIcon =
               new Image(file, 150, 150,
@@ -243,13 +239,9 @@ public class EditableActivityView extends VBox {
 
   private Optional<ImageView> prepActivityImage() {
     if (!this.imageUrl.isBlank()) {
-      Image icon = null;
-      try {
-        icon = new Image(new FileInputStream(this.imageUrl), 150, 150, false, false);
-        return Optional.of(new ImageView(icon));
-      } catch (FileNotFoundException e) {
-        throw new RuntimeException(e);
-      }
+        ImageView icon = new ImageView(new Image(imageUrl, 150, 150, false, false));
+        icon.setId("image_for_" + this.name);
+        return Optional.of(icon);
     }
     return Optional.empty();
   }
@@ -264,11 +256,4 @@ public class EditableActivityView extends VBox {
     return name;
   }
 
-  public List<ImageView> getSpots() {
-    return spots;
-  }
-
-  public String getImageUrl() {
-    return imageUrl;
-  }
 }
