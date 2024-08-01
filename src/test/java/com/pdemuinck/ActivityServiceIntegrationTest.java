@@ -3,7 +3,6 @@ package com.pdemuinck;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
@@ -134,4 +133,40 @@ public class ActivityServiceIntegrationTest {
     List<String> strings = activityService.fetchBlackList("drawing");
     assertThat(strings).containsOnly("charlie");
   }
+
+  @Test
+  public void retains_blacklist_for_other_activities(){
+    DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
+    ActivityService activityService = new ActivityMockService(dataStore);
+    activityService.addToBlackList("drawing", "charlie");
+    activityService.addToBlackList("painting", "maxine");
+    activityService.removeFromBlackList("drawing", "charlie");
+    assertThat(activityService.fetchBlackList("drawing")).isEmpty();
+    assertThat(activityService.fetchBlackList("painting")).hasSize(1);
+  }
+
+  @Test
+  public void adds_user_to_blacklist_after_removal(){
+    DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
+    ActivityService activityService = new ActivityMockService(dataStore);
+    activityService.addToBlackList("drawing", "charlie");
+    activityService.addToBlackList("painting", "maxine");
+    activityService.removeFromBlackList("drawing", "charlie");
+    activityService.addToBlackList("drawing", "charlie");
+    assertThat(activityService.fetchBlackList("drawing")).hasSize(1);
+    assertThat(activityService.fetchBlackList("painting")).hasSize(1);
+  }
+
+  @Test
+  public void adds_same_user_to_multiple_blacklists(){
+    DataStore dataStore = new FileDataStore(tempDir.getAbsolutePath());
+    ActivityService activityService = new ActivityMockService(dataStore);
+    activityService.addToBlackList("drawing", "charlie");
+    activityService.addToBlackList("painting", "charlie");
+    activityService.removeFromBlackList("drawing", "charlie");
+    activityService.addToBlackList("drawing", "charlie");
+    assertThat(activityService.fetchBlackList("drawing")).hasSize(1);
+    assertThat(activityService.fetchBlackList("painting")).hasSize(1);
+  }
+
 }

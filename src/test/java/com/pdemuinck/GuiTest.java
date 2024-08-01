@@ -460,19 +460,13 @@ public class GuiTest {
   }
 
   @Test
-  public void add_user_to_black_list_only_for_that_activity(FxRobot robot) {
+  public void displays_blacklist_in_present_mode(FxRobot robot) {
     registerBlackList("drawing", "charlie");
-    registerBlackList("painting", "maxine");
     addActivity(robot, "drawing");
-    addActivity(robot, "painting");
-    addUser(robot, "charlie");
-    addUser(robot, "maxine");
-    addUser(robot, "otto");
-    addToBlackList(robot, "drawing", "otto");
-    GridPane blackListDrawing = robot.lookup("#blacklist_for_drawing").queryAs(GridPane.class);
-    GridPane blackListPainting = robot.lookup("#blacklist_for_painting").queryAs(GridPane.class);
-    assertThat(blackListDrawing.getChildren()).hasSize(2);
-    assertThat(blackListPainting.getChildren()).hasSize(1);
+    addUser(robot, "charlie", "batman.png");
+    switchToPresentMode(robot);
+    GridPane blackList = robot.lookup("#blacklist_for_drawing").queryAs(GridPane.class);
+    assertThat(blackList.getChildren()).hasSize(1);
   }
 
   private void removeActivity(FxRobot robot, String activityName) {

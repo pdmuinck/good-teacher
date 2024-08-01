@@ -17,6 +17,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -177,6 +178,7 @@ public class EditableActivityView extends VBox {
           cb.setSelected(true);
         }
         cb.setOnMouseClicked(r -> {
+          tf2.setText("");
           if (cb.isSelected()) {
             this.activityService.addToBlackList(this.getName(), u);
           } else {
@@ -239,9 +241,9 @@ public class EditableActivityView extends VBox {
 
   private Optional<ImageView> prepActivityImage() {
     if (!this.imageUrl.isBlank()) {
-        ImageView icon = new ImageView(new Image(imageUrl, 150, 150, false, false));
-        icon.setId("image_for_" + this.name);
-        return Optional.of(icon);
+      ImageView icon = new ImageView(new Image(imageUrl, 150, 150, false, false));
+      icon.setId("image_for_" + this.name);
+      return Optional.of(icon);
     }
     return Optional.empty();
   }

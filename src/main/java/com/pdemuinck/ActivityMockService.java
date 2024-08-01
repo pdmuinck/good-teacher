@@ -72,9 +72,10 @@ public class ActivityMockService implements ActivityService {
   @Override
   public void removeFromBlackList(String activity, String u) {
     String data =
-        fetchBlackList(activity).stream().filter(a -> !a.contains(u)).map(s -> String.join(",", activity, s))
-            .collect(Collectors.joining("\r\n"));
-    dataStore.overwriteBlackList(data);
+        dataStore.fetchBlackLists().stream().filter(b -> !b.contains(activity) || !b.contains(u))
+            .collect(
+                Collectors.joining("\r\n"));
+    dataStore.overwriteBlackList(data + "\r\n");
   }
 
   @Override
