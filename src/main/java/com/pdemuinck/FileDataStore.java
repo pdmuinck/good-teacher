@@ -38,12 +38,12 @@ public class FileDataStore implements DataStore {
 
     if (customDir.exists() || customDir.mkdirs()) {
       try {
-        File activities = new File(String.join(File.separator, appHome, file));
-        if(activities.createNewFile()){
-          Files.write(activities.toPath(),
+        File out = new File(String.join(File.separator, appHome, file));
+        if( out.createNewFile()){
+          Files.write( out.toPath(),
               data.getBytes(StandardCharsets.UTF_8), openOption);
         } else {
-          Files.write(activities.toPath(),
+          Files.write( out.toPath(),
               data.getBytes(StandardCharsets.UTF_8), openOption);
         }
       } catch (IOException e) {
@@ -141,5 +141,10 @@ public class FileDataStore implements DataStore {
   @Override
   public void overwriteBlackList(String data) {
     write(data, "blacklist.csv", StandardOpenOption.TRUNCATE_EXISTING);
+  }
+
+  @Override
+  public void saveFeedback(String data) {
+    write(data, "feedback.csv", StandardOpenOption.APPEND);
   }
 }

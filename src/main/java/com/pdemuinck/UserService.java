@@ -12,4 +12,6 @@ public interface UserService {
 
   Optional<User> fetchUserByName(String name);
 
+  void saveFeedback(String activityName, String user, String feedback);
+
 }

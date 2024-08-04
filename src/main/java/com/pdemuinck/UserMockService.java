@@ -1,5 +1,8 @@
 package com.pdemuinck;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -56,5 +59,11 @@ public class UserMockService implements UserService {
   @Override
   public Optional<User> fetchUserByName(String name) {
     return this.users.stream().filter(u -> u.getName().equals(name)).findFirst();
+  }
+
+  @Override
+  public void saveFeedback(String activityName, String user, String feedback) {
+    this.dataStore.saveFeedback(String.join(",", user, activityName, Session.session,
+        LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE), feedback) + "\r\n");
   }
 }

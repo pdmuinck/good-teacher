@@ -23,4 +23,6 @@ public interface DataStore {
   List<String> fetchBlackLists();
 
   void overwriteBlackList(String data);
+
+  void saveFeedback(String data);
 }

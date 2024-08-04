@@ -15,7 +15,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
-import javax.swing.Painter;
 import org.kordamp.ikonli.feather.Feather;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -37,6 +36,8 @@ public class ActivitySpot extends VBox {
   private FontIcon meh = new FontIcon(Feather.MEH);
   private FontIcon frown = new FontIcon(Feather.FROWN);
 
+  private String currentUser;
+
 
   public ActivitySpot(ClassroomController classroomController, UserService userService, ActivityService activityService, String activityName, Image image, int x){
     this.activityService = activityService;
@@ -49,16 +50,19 @@ public class ActivitySpot extends VBox {
       meh.setIconColor(Paint.valueOf("black"));
       frown.setIconColor(Paint.valueOf("black"));
       smile.setIconColor(Paint.valueOf("green"));
+      userService.saveFeedback(activityName, currentUser, "smile");
     });
     meh.setOnMouseClicked(e -> {
       frown.setIconColor(Paint.valueOf("black"));
       smile.setIconColor(Paint.valueOf("black"));
       meh.setIconColor(Paint.valueOf("orange"));
+      userService.saveFeedback(activityName, currentUser, "meh");
     });
     frown.setOnMouseClicked(e -> {
       frown.setIconColor(Paint.valueOf("red"));
       smile.setIconColor(Paint.valueOf("black"));
       meh.setIconColor(Paint.valueOf("black"));
+      userService.saveFeedback(activityName, currentUser, "frown");
     });
     feedbackGroup.setVisible(false);
     super.getChildren().addAll(prepareImageView(image, x), feedbackGroup);
@@ -110,6 +114,7 @@ public class ActivitySpot extends VBox {
                   u -> u.getName().equals(db.getString().split(",")[0]) &&
                       u.getAvatar().equals(db.getString().split(",")[1]))
               .findFirst().get().getName());
+          currentUser = db.getString().split(",")[0];
           classroomController.hideUser(db.getString().split(",")[0]);
           this.feedbackGroup.setId("feedback_from_" + db.getString().split(",")[0]);
           this.feedbackGroup.setVisible(true);
