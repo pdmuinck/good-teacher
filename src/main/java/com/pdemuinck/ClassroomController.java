@@ -194,7 +194,7 @@ public class ClassroomController implements Initializable {
   @FXML
   public void reset(DragEvent event) {
     if (event.getTransferMode() == null || (event.getGestureSource() instanceof ImageView &&
-        ((ImageView) event.getGestureSource()).getId().contains("avatar_"))) {
+        ((ImageView) event.getGestureSource()).getId().contains("avatar_")) && !event.getPickResult().getIntersectedNode().getId().contains("spot")) {
       String name = event.getDragboard().getString().split(",")[0];
       this.fixedUserViews.forEach(uv -> {
         if (uv.getName().equals(name)) {
@@ -294,6 +294,5 @@ public class ClassroomController implements Initializable {
         uv.setVisible(false);
       }
     });
-
   }
 }
