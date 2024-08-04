@@ -20,6 +20,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.KeyCode;
@@ -72,7 +73,8 @@ public class ClassroomController implements Initializable {
   List<EditableUserView> editableUserViews = new ArrayList<>();
   List<EditableActivityView> activityViews = new ArrayList<>();
 
-  public ClassroomController(ActivityService activityService, UserService userService, FileSystemService fileSystemService){
+  public ClassroomController(ActivityService activityService, UserService userService,
+                             FileSystemService fileSystemService) {
     this.activityService = activityService;
     this.userService = userService;
     this.fileSystemService = fileSystemService;
@@ -122,7 +124,7 @@ public class ClassroomController implements Initializable {
     });
   }
 
-  private void resetUserListInPresentMode(DragEvent event){
+  private void resetUserListInPresentMode(DragEvent event) {
     Dragboard db = event.getDragboard();
     if (db.hasString()) {
       String user = db.getString();
@@ -191,7 +193,8 @@ public class ClassroomController implements Initializable {
 
   @FXML
   public void reset(DragEvent event) {
-    if(event.getTransferMode() == null){
+    if (event.getTransferMode() == null || (event.getGestureSource() instanceof ImageView &&
+        ((ImageView) event.getGestureSource()).getId().contains("avatar_"))) {
       String name = event.getDragboard().getString().split(",")[0];
       this.fixedUserViews.forEach(uv -> {
         if (uv.getName().equals(name)) {
@@ -228,7 +231,8 @@ public class ClassroomController implements Initializable {
       newUser.setText("");
       Optional<User> user = userService.fetchUserByName(text);
       if (user.isEmpty()) {
-        editableUserViews.add(new EditableUserView(text, "", new HashMap<>(), userService, fileSystemService));
+        editableUserViews.add(
+            new EditableUserView(text, "", new HashMap<>(), userService, fileSystemService));
         userService.addUser(text, "");
       }
       kids.getChildren().clear();
@@ -286,7 +290,7 @@ public class ClassroomController implements Initializable {
 
   public void hideUser(String name) {
     this.fixedUserViews.forEach(uv -> {
-      if(uv.getName().equals(name)){
+      if (uv.getName().equals(name)) {
         uv.setVisible(false);
       }
     });

@@ -15,7 +15,8 @@
         <SplitPane fx:id="splitScreen">
             <ScrollPane fx:id="users" maxWidth="600" minWidth="150">
                 <VBox>
-                    <CustomTextField promptText="Voeg een nieuwe gebruiker toe" fx:id="newUser" onKeyPressed="#addUser"/>
+                    <CustomTextField promptText="Voeg een nieuwe gebruiker toe" fx:id="newUser"
+                                     onKeyPressed="#addUser"/>
                     <VBox fx:id="kids" BorderPane.alignment="CENTER">
                     </VBox>
                 </VBox>
