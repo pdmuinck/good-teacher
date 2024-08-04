@@ -1,5 +1,6 @@
 package com.pdemuinck;
 
+import com.pdemuinck.views.ActivitySpot;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -8,11 +9,6 @@ import javafx.scene.Node;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 
@@ -20,7 +16,7 @@ public class FixedActivityView extends VBox {
 
   private String name;
 
-  List<ImageView> spots;
+  List<ActivitySpot> spots;
 
   private ActivityService activityService;
   private UserService userService;
@@ -33,7 +29,7 @@ public class FixedActivityView extends VBox {
     this.classroomController = classroomController;
     this.name = name;
     Image image = new Image(getClass().getClassLoader().getResourceAsStream("icons/empty_box.png"));
-    this.spots = IntStream.range(0, spots).boxed().map(x -> prepareImageView(image, x)).collect(
+    this.spots = IntStream.range(0, spots).boxed().map(x -> new ActivitySpot(classroomController, userService, activityService, name, image, x)).collect(
         Collectors.toList());
     if (!imageUrl.isBlank()) {
       Image icon = null;
@@ -81,63 +77,5 @@ public class FixedActivityView extends VBox {
       }
     }
     return gridPane;
-  }
-
-  private ImageView prepareImageView(Image basic, int x) {
-    ImageView imageView1 = new ImageView(basic);
-    imageView1.setUserData("icons/empty_box.png");
-    imageView1.setId(x + "_spot_for_" + name);
-    imageView1.setOnDragDetected((MouseEvent event) -> {
-      if (!imageView1.getUserData().equals("icons/empty_box.png")) {
-        Dragboard db = imageView1.startDragAndDrop(TransferMode.ANY);
-        db.setDragView(imageView1.getImage());
-        ClipboardContent content = new ClipboardContent();
-        content.putString((String) imageView1.getUserData());
-        db.setContent(content);
-        activityService.leaveActivity(this.name, (String) imageView1.getUserData());
-        imageView1.setImage(basic);
-        imageView1.setUserData("icons/empty_box.png");
-      }
-    });
-    imageView1.setOnDragOver((DragEvent event) -> {
-      List<Activity> activities = activityService.getActivities();
-      List<String> blackList = activityService.fetchBlackList(this.name);
-      if (activities.stream().anyMatch(a -> a.getName().equals(this.name) &&
-          (a.getAvailableSpots() == 0 ||
-              blackList.contains(event.getDragboard().getString().split(",")[0])))) {
-        event.acceptTransferModes(TransferMode.NONE);
-      } else if (event.getGestureSource() != imageView1 && event.getDragboard().hasString() &&
-          imageView1.getUserData().equals("icons/empty_box.png")) {
-        event.acceptTransferModes(TransferMode.ANY);
-      }
-      event.consume();
-    });
-    imageView1.setOnDragDropped((DragEvent event) -> {
-      Dragboard db = event.getDragboard();
-      if (db.hasString()) {
-        if (imageView1.getUserData().equals("icons/empty_box.png")) {
-          Image image2 =
-              null;
-          image2 =
-              new Image(db.getString().split(",")[1], 75, 75, false, false);
-          imageView1.setImage(image2);
-          imageView1.setPreserveRatio(true);
-          imageView1.setUserData(db.getString());
-
-          activityService.joinActivity(name, userService.fetchUsers().stream().filter(
-                  u -> u.getName().equals(db.getString().split(",")[0]) &&
-                      u.getAvatar().equals(db.getString().split(",")[1]))
-              .findFirst().get().getName());
-          classroomController.hideUser(db.getString().split(",")[0]);
-        } else {
-          event.setDropCompleted(false);
-        }
-        event.setDropCompleted(true);
-      } else {
-        event.setDropCompleted(false);
-      }
-      event.consume();
-    });
-    return imageView1;
   }
 }

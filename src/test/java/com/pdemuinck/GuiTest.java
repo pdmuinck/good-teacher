@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import atlantafx.base.controls.CustomTextField;
 import atlantafx.base.controls.ToggleSwitch;
+import atlantafx.base.layout.InputGroup;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -467,6 +468,28 @@ public class GuiTest {
     switchToPresentMode(robot);
     GridPane blackList = robot.lookup("#blacklist_for_drawing").queryAs(GridPane.class);
     assertThat(blackList.getChildren()).hasSize(1);
+  }
+
+  @Test
+  public void shows_feedback_icons_when_user_joins_activity(FxRobot robot){
+    addUser(robot, "charlie", "batman.png");
+    addActivity(robot, "drawing");
+    switchToPresentMode(robot);
+    ImageView firstSpot = robot.lookup("#0_spot_for_drawing").queryAs(ImageView.class);
+    robot.drag("#avatar_charlie").dropTo(firstSpot);
+    InputGroup inputGroup = robot.lookup("#feedback_from_charlie").queryAs(InputGroup.class);
+    assertThat(inputGroup).isNotNull();
+  }
+
+  @Test
+  public void user_gives_feedback(FxRobot robot){
+    addUser(robot, "charlie", "batman.png");
+    addActivity(robot, "drawing");
+    switchToPresentMode(robot);
+    ImageView firstSpot = robot.lookup("#0_spot_for_drawing").queryAs(ImageView.class);
+    robot.drag("#avatar_charlie").dropTo(firstSpot);
+    InputGroup inputGroup = robot.lookup("#feedback_from_charlie").queryAs(InputGroup.class);
+    assertThat(inputGroup).isNotNull();
   }
 
   private void removeActivity(FxRobot robot, String activityName) {
