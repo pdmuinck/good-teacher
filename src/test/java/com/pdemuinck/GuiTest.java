@@ -492,6 +492,22 @@ public class GuiTest {
     assertThat(inputGroup).isNotNull();
   }
 
+  @Test
+  public void stores_user_feedback(FxRobot robot){
+    addUser(robot, "charlie", "batman.png");
+    addActivity(robot, "drawing");
+    switchToPresentMode(robot);
+    ImageView firstSpot = robot.lookup("#0_spot_for_drawing").queryAs(ImageView.class);
+    robot.drag("#avatar_charlie").dropTo(firstSpot);
+    InputGroup inputGroup = robot.lookup("#feedback_from_charlie").queryAs(InputGroup.class);
+    robot.clickOn(inputGroup.getChildren().get(0));
+    verify(userService, times(1)).saveFeedback("drawing", "charlie", "smile");
+    robot.clickOn(inputGroup.getChildren().get(1));
+    verify(userService, times(1)).saveFeedback("drawing", "charlie", "meh");
+    robot.clickOn(inputGroup.getChildren().get(2));
+    verify(userService, times(1)).saveFeedback("drawing", "charlie", "frown");
+  }
+
   private void removeActivity(FxRobot robot, String activityName) {
     robot.clickOn("#remove_activity_" + activityName);
     activities = activities.stream().filter(a -> !a.getName().equals(activityName)).collect(
