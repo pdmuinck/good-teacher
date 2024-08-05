@@ -4,6 +4,7 @@ import atlantafx.base.controls.CustomTextField;
 import atlantafx.base.controls.ToggleSwitch;
 import atlantafx.base.layout.InputGroup;
 import atlantafx.base.theme.Styles;
+import atlantafx.base.theme.Tweaks;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,11 +12,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.MenuButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.TextField;
@@ -55,7 +60,7 @@ public class ClassroomController implements Initializable {
   private CustomTextField newUser;
 
   @FXML
-  private ToggleSwitch presentMode;
+  private ChoiceBox presentMode;
 
   @FXML
   private Button playActivities;
@@ -66,9 +71,14 @@ public class ClassroomController implements Initializable {
   @FXML
   private InputGroup activityButtons;
 
-  private ActivityService activityService = new ActivityMockService(new FileDataStore());
+  @FXML
+  private MenuButton moreBoards;
+
+  private boolean present;
+
+  private ActivityService activityService;
   private FileSystemService fileSystemService;
-  private UserService userService = new UserMockService(new FileDataStore());
+  private UserService userService;
   List<FixedUserView> fixedUserViews = new ArrayList<>();
   List<EditableUserView> editableUserViews = new ArrayList<>();
   List<EditableActivityView> activityViews = new ArrayList<>();
@@ -82,6 +92,7 @@ public class ClassroomController implements Initializable {
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
+//    moreBoards.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.BUTTON_OUTLINED);
     final double SPEED = 0.01;
     activities.getContent().setOnScroll(scrollEvent -> {
       double deltaY = scrollEvent.getDeltaY() * SPEED;
@@ -96,7 +107,6 @@ public class ClassroomController implements Initializable {
     playActivities.setVisible(false);
     pauseActivities.setVisible(false);
     activityButtons.getChildren().clear();
-    activityButtons.getChildren().add(presentMode);
     List<Activity> activities = activityService.fetchActivities();
     this.activityViews = activities.stream().filter(Activity::isShow).map(
         a -> new EditableActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(),
@@ -128,17 +138,13 @@ public class ClassroomController implements Initializable {
     Dragboard db = event.getDragboard();
     if (db.hasString()) {
       String user = db.getString();
-      if (presentMode.isSelected()) {
-        this.fixedUserViews.stream().filter(u -> u.getAvatar().equals(user.split(",")[1]))
-            .findFirst()
-            .ifPresent(x -> x.setVisible(true));
-        kids.getChildren().clear();
-        kids.getChildren().addAll(this.fixedUserViews.stream().filter(Node::isVisible).collect(
-            Collectors.toList()));
-        event.setDropCompleted(true);
-      } else {
-        event.setDropCompleted(false);
-      }
+      this.fixedUserViews.stream().filter(u -> u.getAvatar().equals(user.split(",")[1]))
+          .findFirst()
+          .ifPresent(x -> x.setVisible(true));
+      kids.getChildren().clear();
+      kids.getChildren().addAll(this.fixedUserViews.stream().filter(Node::isVisible).collect(
+          Collectors.toList()));
+      event.setDropCompleted(true);
     } else {
       event.setDropCompleted(false);
     }
@@ -194,7 +200,8 @@ public class ClassroomController implements Initializable {
   @FXML
   public void reset(DragEvent event) {
     if (event.getTransferMode() == null || (event.getGestureSource() instanceof ImageView &&
-        ((ImageView) event.getGestureSource()).getId().contains("avatar_")) && !event.getPickResult().getIntersectedNode().getId().contains("spot")) {
+        ((ImageView) event.getGestureSource()).getId().contains("avatar_")) &&
+        !event.getPickResult().getIntersectedNode().getId().contains("spot")) {
       String name = event.getDragboard().getString().split(",")[0];
       this.fixedUserViews.forEach(uv -> {
         if (uv.getName().equals(name)) {
@@ -246,8 +253,10 @@ public class ClassroomController implements Initializable {
   }
 
   @FXML
-  public void onPresentMode(MouseEvent event) {
-    if (this.presentMode.isSelected()) {
+  public void onPresentMode(ActionEvent event) {
+    String newValue = (String) ((ChoiceBox) event.getTarget()).getValue();
+    present = newValue.equals("Presenteer");
+    if (present) {
       List<FixedActivityView> fixedActivityViewStream = activityService.fetchActivities().stream()
           .filter(Activity::isShow)
           .map(a -> new FixedActivityView(a.getName(), a.getImageUrl(), a.getMaxSpots(),
@@ -266,7 +275,7 @@ public class ClassroomController implements Initializable {
       activityButtons.getChildren().clear();
       playActivities.setVisible(true);
       pauseActivities.setVisible(true);
-      activityButtons.getChildren().addAll(playActivities, pauseActivities, presentMode);
+      activityButtons.getChildren().addAll(playActivities, pauseActivities);
     } else {
       fillWithEditableActivities(this.activityViews);
       newActivity.setVisible(true);
@@ -280,7 +289,6 @@ public class ClassroomController implements Initializable {
           .add(new Accordion(editableUserViews.toArray(new TitledPane[editableUserViews.size()])));
       kids.getChildren().addAll(editableUserViews);
       activityButtons.getChildren().clear();
-      activityButtons.getChildren().addAll(presentMode);
     }
   }
 
@@ -294,5 +302,10 @@ public class ClassroomController implements Initializable {
         uv.setVisible(false);
       }
     });
+  }
+
+  @FXML
+  public void saveBoardName(KeyEvent event) {
+
   }
 }

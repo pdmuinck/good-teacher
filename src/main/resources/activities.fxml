@@ -10,39 +10,69 @@
 <?import javafx.scene.layout.VBox?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 <?import javafx.scene.control.ScrollPane?>
-<VBox onDragExited="#reset" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1">
-    <children>
-        <SplitPane fx:id="splitScreen">
-            <ScrollPane fx:id="users" maxWidth="600" minWidth="150">
-                <VBox>
-                    <CustomTextField promptText="Voeg een nieuwe gebruiker toe" fx:id="newUser"
-                                     onKeyPressed="#addUser"/>
-                    <VBox fx:id="kids" BorderPane.alignment="CENTER">
-                    </VBox>
-                </VBox>
-            </ScrollPane>
-            <ScrollPane fx:id="activities">
-                <content>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuButton?>
+<?import com.sun.javafx.scene.control.ContextMenuContent.ArrowMenuItem?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<VBox xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1">
+    <HBox fx:id="boardmenu">
+        <InputGroup fx:id="boardName">
+            <Label>Bord Naam:</Label>
+            <CustomTextField promptText="Naamloos bord" fx:id="boardNameInput"
+                             onKeyPressed="#saveBoardName"/>
+            <Label>Laatst bijgewerkt:</Label>
+            <TextField fx:id="boardLastUpdated" editable="false"></TextField>
+            <ChoiceBox fx:id="presentMode" value="Editeer" onAction="#onPresentMode">
+                <items>
+                    <FXCollections fx:factory="observableArrayList">
+                        <String fx:value="Editeer"/>
+                        <String fx:value="Presenteer"/>
+                    </FXCollections>
+                </items>
+            </ChoiceBox>
+            <MenuButton fx:id="moreBoards" text="Kies een ander bord">
+            </MenuButton>
+        </InputGroup>
+
+    </HBox>
+    <VBox onDragExited="#reset" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1">
+        <children>
+            <SplitPane fx:id="splitScreen">
+                <ScrollPane fx:id="users" maxWidth="600" minWidth="150">
                     <VBox>
-                        <InputGroup fx:id="activityButtons">
-                            <Button fx:id="playActivities" onMouseClicked="#startAllActivities">
-                                <graphic>
-                                    <FontIcon iconLiteral="fth-play"/>
-                                </graphic>
-                            </Button>
-                            <Button fx:id="pauseActivities" onMouseClicked="#pauseAllActivities">
-                                <graphic>
-                                    <FontIcon iconColor="orange" iconLiteral="fth-pause"/>
-                                </graphic>
-                            </Button>
-                            <ToggleSwitch fx:id="presentMode" onMouseClicked="#onPresentMode" text="presenteer"/>
-                        </InputGroup>
-                        <CustomTextField promptText="Voeg een activiteit toe" fx:id="newActivity"
-                                         onKeyPressed="#addActivity"/>
-                        <GridPane fx:id="activitiesPane" onDragExited="#reset" BorderPane.alignment="CENTER"/>
+                        <CustomTextField promptText="Voeg een nieuwe gebruiker toe" fx:id="newUser"
+                                         onKeyPressed="#addUser"/>
+                        <VBox fx:id="kids" BorderPane.alignment="CENTER">
+                        </VBox>
                     </VBox>
-                </content>
-            </ScrollPane>
-        </SplitPane>
-    </children>
+                </ScrollPane>
+                <ScrollPane fx:id="activities">
+                    <content>
+                        <VBox>
+                            <InputGroup fx:id="activityButtons">
+                                <Button fx:id="playActivities" onMouseClicked="#startAllActivities">
+                                    <graphic>
+                                        <FontIcon iconLiteral="fth-play"/>
+                                    </graphic>
+                                </Button>
+                                <Button fx:id="pauseActivities" onMouseClicked="#pauseAllActivities">
+                                    <graphic>
+                                        <FontIcon iconColor="orange" iconLiteral="fth-pause"/>
+                                    </graphic>
+                                </Button>
+                            </InputGroup>
+                            <CustomTextField promptText="Voeg een activiteit toe" fx:id="newActivity"
+                                             onKeyPressed="#addActivity"/>
+                            <GridPane fx:id="activitiesPane" onDragExited="#reset" BorderPane.alignment="CENTER"/>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </SplitPane>
+        </children>
+    </VBox>
 </VBox>
