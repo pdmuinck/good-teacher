@@ -1,5 +1,8 @@
 package com.pdemuinck;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,15 +16,24 @@ import java.util.stream.Collectors;
 
 public class Activity {
   private String name;
+  @JsonIgnore
   private int availableSpots;
   private int maxSpots;
+  @JsonIgnore
   private boolean show = true;
   private String imageUrl;
+  @JsonIgnore
   private LocalDateTime firstStartTs, lastStartTs, endTs;
+  @JsonIgnore
   private long totalDuration = 0;
+  @JsonIgnore
   private final Map<String, LocalDateTime> joinTimeByKid = new HashMap<>();
+  @JsonIgnore
   private final Map<String, Long> durationByKid = new HashMap<>();
+  @JsonIgnore
   private List<String> blackList = new ArrayList<>();
+
+  private Activity(){}
 
   public Activity(String name, String imageUrl, int maxSpots) {
     this.name = name;

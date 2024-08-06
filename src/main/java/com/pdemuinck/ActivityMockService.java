@@ -3,11 +3,16 @@ package com.pdemuinck;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.maxBy;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +30,7 @@ public class ActivityMockService implements ActivityService {
 
   @Override
   public List<String> fetchBlackList(String activity) {
-    return  dataStore.fetchBlackLists().stream().filter(s -> s.startsWith(activity))
+    return dataStore.fetchBlackLists().stream().filter(s -> s.startsWith(activity))
         .map(s -> s.split(",")[1]).toList();
   }
 
@@ -37,7 +42,7 @@ public class ActivityMockService implements ActivityService {
     activities.forEach(a -> {
       if (a.getName().equals(activityName)) {
         a.setBlackList(blackLists);
-        if(!a.isOnBlackList(userName)){
+        if (!a.isOnBlackList(userName)) {
           a.join(LocalDateTime.now(), userName);
         }
       }
@@ -76,6 +81,42 @@ public class ActivityMockService implements ActivityService {
             .collect(
                 Collectors.joining("\r\n"));
     dataStore.overwriteBlackList(data + "\r\n");
+  }
+
+  @Override
+  public List<Board> fetchBoards() {
+    List<Board> boards = new ArrayList<>();
+
+    Map<String, List<Board>> boardsByName = dataStore.fetchBoards().stream().map(this::mapToBoard)
+        .collect(groupingBy(Board::getName));
+
+    boardsByName.keySet().stream().forEach(k -> {
+      List<Board> boards1 = boardsByName.get(k);
+      Board latestBoard = Collections.max(boards1, Comparator.comparing(Board::getLastUpdated));
+      boards.add(latestBoard);
+    });
+    boards.sort(Collections.reverseOrder(Comparator.comparing(Board::getLastUpdated)));
+    return boards;
+  }
+
+  @Override
+  public void saveBoard(Board board) {
+    try {
+      dataStore.saveBoard(String.join(";", board.getName(), board.getLastUpdated().format(
+          DateTimeFormatter.ISO_LOCAL_DATE_TIME), new ObjectMapper().writeValueAsString(board.getActivities())) + "\r\n");
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public Board mapToBoard(String line) {
+    try {
+      String[] split = line.split(";");
+      List<Activity> activities = new ObjectMapper().readValue(split[2], new TypeReference<List<Activity>>(){});
+      return new Board(split[0], LocalDateTime.parse(split[1]), activities);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -184,7 +225,8 @@ public class ActivityMockService implements ActivityService {
 
   @Override
   public List<TimeReportRow> fetchTimeReport(String name) {
-    List<String> timings = dataStore.fetchActivityTime().stream().filter(l -> l.contains(name)).toList();
+    List<String> timings =
+        dataStore.fetchActivityTime().stream().filter(l -> l.contains(name)).toList();
     List<TimeReportRow> rows = timings.stream().map(this::parse).collect(Collectors.toList());
     return rows.stream().filter(r -> r.getUserName().equals(name)).collect(Collectors.toList());
   }
@@ -210,7 +252,8 @@ public class ActivityMockService implements ActivityService {
 
   private TimeReportRow parse(String data) {
     String[] split = data.split(",", -1);
-    return new TimeReportRow(split[0].trim(), split[1].trim(), split[2].trim(), LocalDate.parse(split[3].trim()),
+    return new TimeReportRow(split[0].trim(), split[1].trim(), split[2].trim(),
+        LocalDate.parse(split[3].trim()),
         Long.valueOf(split[4].trim()));
   }
 }

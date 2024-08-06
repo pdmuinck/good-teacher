@@ -6,3 +6,4 @@
 - make it clear in present mode that activities are busy or paused (disable play button, add time on activities: "started x minutes ago")
 - be able to create boards and keep them, switch boards and present them. 
 - display feedback
+- make sure boards are saved with unique id (sequence)

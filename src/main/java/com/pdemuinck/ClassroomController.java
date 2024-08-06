@@ -1,19 +1,21 @@
 package com.pdemuinck;
 
 import atlantafx.base.controls.CustomTextField;
-import atlantafx.base.controls.ToggleSwitch;
 import atlantafx.base.layout.InputGroup;
 import atlantafx.base.theme.Styles;
-import atlantafx.base.theme.Tweaks;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -74,6 +76,11 @@ public class ClassroomController implements Initializable {
   @FXML
   private MenuButton moreBoards;
 
+  @FXML
+  private CustomTextField boardNameInput;
+
+  @FXML TextField boardLastUpdated;
+
   private boolean present;
 
   private ActivityService activityService;
@@ -92,7 +99,15 @@ public class ClassroomController implements Initializable {
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
-//    moreBoards.getStyleClass().addAll(Styles.BUTTON_ICON, Styles.BUTTON_OUTLINED);
+    boardNameInput.focusedProperty().addListener((new ChangeListener<Boolean>() {
+      @Override
+      public void changed(ObservableValue<? extends Boolean> observableValue, Boolean leftFocus,
+                          Boolean focus) {
+        if(leftFocus && !boardNameInput.getText().isBlank()){
+          saveBoard(boardNameInput.getText());
+        }
+      }
+    }));
     final double SPEED = 0.01;
     activities.getContent().setOnScroll(scrollEvent -> {
       double deltaY = scrollEvent.getDeltaY() * SPEED;
@@ -222,13 +237,26 @@ public class ClassroomController implements Initializable {
           activity.getMaxSpots(), activityService, fileSystemService, this, userService));
       fillWithEditableActivities(this.activityViews);
       newActivity.setText("");
+      saveBoard();
     }
+  }
+
+  private void saveBoard(){
+    saveBoard(boardNameInput.getText());
+  }
+
+  private void saveBoard(String boardName){
+    LocalDateTime now = LocalDateTime.now();
+    boardLastUpdated.setText(now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+    activityService.saveBoard(new Board(boardName, now, activityViews.stream().map(a -> new Activity(a.getName(), a.getImageUrl(), a.getSpots().size())).collect(
+        Collectors.toList())));
   }
 
   public void removeActivity(EditableActivityView activity) {
     this.activityViews.remove(activity);
     fillWithEditableActivities(this.activityViews);
     activityService.hideActivity(activity.getName());
+    saveBoard();
   }
 
   @FXML
@@ -302,10 +330,5 @@ public class ClassroomController implements Initializable {
         uv.setVisible(false);
       }
     });
-  }
-
-  @FXML
-  public void saveBoardName(KeyEvent event) {
-
   }
 }

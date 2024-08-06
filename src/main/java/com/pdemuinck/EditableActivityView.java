@@ -258,4 +258,11 @@ public class EditableActivityView extends VBox {
     return name;
   }
 
+  public List<ImageView> getSpots() {
+    return spots;
+  }
+
+  public String getImageUrl() {
+    return imageUrl;
+  }
 }

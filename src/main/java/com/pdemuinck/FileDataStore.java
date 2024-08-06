@@ -147,4 +147,23 @@ public class FileDataStore implements DataStore {
   public void saveFeedback(String data) {
     write(data, "feedback.csv", StandardOpenOption.APPEND);
   }
+
+  @Override
+  public void saveBoard(String data) {
+    write(data, "boards.csv", StandardOpenOption.APPEND);
+  }
+
+  @Override
+  public List<String> fetchBoards() {
+    String path = String.join(File.separator, appHome, "boards.csv");
+    try {
+      if(Files.exists(Path.of(path))){
+        return Files.readAllLines(Path.of(path));
+      } else {
+        return new ArrayList<>();
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

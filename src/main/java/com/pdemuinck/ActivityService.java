@@ -32,4 +32,8 @@ public interface ActivityService {
   void removeFromBlackList(String activity, String u);
 
   List<String> getParticipants(String name);
+
+  List<Board> fetchBoards();
+
+  void saveBoard(Board board);
 }

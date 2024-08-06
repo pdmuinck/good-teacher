@@ -25,4 +25,8 @@ public interface DataStore {
   void overwriteBlackList(String data);
 
   void saveFeedback(String data);
+
+  void saveBoard(String data);
+
+  List<String> fetchBoards();
 }

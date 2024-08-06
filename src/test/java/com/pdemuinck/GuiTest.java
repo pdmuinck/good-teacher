@@ -508,6 +508,11 @@ public class GuiTest {
     verify(userService, times(1)).saveFeedback("drawing", "charlie", "frown");
   }
 
+  @Test
+  public void allow_duplicate_activity_in_edit_and_present_mode(FxRobot robot){
+    assertThat(false).isTrue();
+  }
+
   private void removeActivity(FxRobot robot, String activityName) {
     robot.clickOn("#remove_activity_" + activityName);
     activities = activities.stream().filter(a -> !a.getName().equals(activityName)).collect(
